@@ -1,0 +1,30 @@
+
+
+<svg version="1.1" id="레이어_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 400 400" style="enable-background:new 0 0 400 400" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:url(#SVGID_1_);}
+	.st1{fill:url(#SVGID_2_);}
+</style>
+<g>
+	<linearGradient id="SVGID_1_" gradientUnits="userSpaceOnUse" x1="200" y1="-2.66781" x2="200" y2="411.65582">
+		<stop offset="0" style="stop-color:#867DDA"></stop>
+		<stop offset="0.56477" style="stop-color:#87A9ED"></stop>
+		<stop offset="1" style="stop-color:#EAEBFF"></stop>
+	</linearGradient>
+	<path class="st0" d="M200,6C92.85677,6,6,92.85677,6,200s86.85677,194,194,194s194-86.85675,194-194S307.14325,6,200,6z
+		 M200,359.94681c-43.58284,0-83.08659-17.43933-111.9353-45.7106l26.54875-26.46582
+		c-9.69108-19.06882-26.24417-33.94051-46.52957-41.44682l-9.45622-3.4991l9.45622-3.49915
+		c23.3996-8.6586,41.84879-27.10779,50.50746-50.5074l3.49908-9.45621l3.49909,9.45621
+		c7.5205,20.32382,22.43307,36.90331,41.5539,46.5867L314.58594,88.42288C342.65109,117.24004,359.94681,156.59715,359.94681,200
+		C359.94681,288.33618,288.33618,359.94681,200,359.94681z"></path>
+	<linearGradient id="SVGID_2_" gradientUnits="userSpaceOnUse" x1="166.46277" y1="214.02348" x2="166.46277" y2="388.2106">
+		<stop offset="0" style="stop-color:#87A9ED"></stop>
+		<stop offset="0.79196" style="stop-color:#D5DDFB"></stop>
+		<stop offset="1" style="stop-color:#EAEBFF"></stop>
+	</linearGradient>
+	<path class="st1" d="M166.46277,253.65958l1.84912,4.99719c4.57571,12.36566,14.32527,22.1152,26.69093,26.69092L200,287.19681
+		l-4.99718,1.84912c-12.36566,4.57571-22.11522,14.32526-26.69093,26.69092l-1.84912,4.99719l-1.84912-4.99719
+		c-4.57571-12.36566-14.32527-22.1152-26.69093-26.69092l-4.99718-1.84912l4.99718-1.84912
+		c12.36566-4.57571,22.11522-14.32526,26.69093-26.69092L166.46277,253.65958z"></path>
+</g>
+</svg>
