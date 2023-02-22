@@ -18,7 +18,6 @@
             {{ link.text }}
         </v-btn>
       </router-link>
-      <v-calendar></v-calendar>
     </v-container>
   </v-app-bar>
 </template>
