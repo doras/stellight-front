@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container style="padding-top: 128px; padding-bottom: 64px;">
     <v-row>
       <v-col>
         <Calendar
