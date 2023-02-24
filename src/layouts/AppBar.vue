@@ -1,13 +1,9 @@
 <template>
-  <v-app-bar flat>
+  <v-app-bar 
+    flat 
+    style="border-bottom: 1px solid rgb(0, 0, 0, 0.12); background-color: rgba(255,255,255,.7);"
+  >
     <v-container class="fill-height d-flex align-center">
-      <v-img
-        max-width="40"
-        max-height="40"
-        cover
-        src="../assets/stellive_logo.svg"
-        class="mr-6"
-      ></v-img>
 
       <router-link 
         v-for="link in links"
