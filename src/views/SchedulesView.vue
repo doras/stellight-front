@@ -73,10 +73,8 @@
 import { Calendar } from 'v-calendar';
 import { DateTime } from 'luxon';
 import ScheduleItem from '@/components/ScheduleItem.vue';
-import { COLOR_ARRAY } from '@/utils/consts';
+import { COLOR_ARRAY, STELLARS_API_URL, SCHEDULES_API_URL } from '@/utils/consts';
 
-const STELLARS_API_URL = "/api/v1/stellars";
-const SCHEDULES_API_URL = "/api/v1/schedules";
 const formatDateTime = dateTime => dateTime.toISO().substring(0, 19);
 
 export default {
