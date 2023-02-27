@@ -1,0 +1,6 @@
+{
+    "/api/v1/stellars": "/stellars",
+    "/api/v1/stellars/:id": "/stellars/:id",
+    "/api/v1/schedules": "/schedules",
+    "/api/v1/schedules/:id": "/schedules/:id"
+}

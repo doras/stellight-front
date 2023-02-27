@@ -6,11 +6,14 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint . --fix --ignore-path .gitignore"
+    "lint": "eslint . --fix --ignore-path .gitignore",
+    "start": "json-server --routes routes.json --watch db.json --middlewares params.js"
   },
   "dependencies": {
     "@mdi/font": "7.0.96",
+    "axios": "^1.3.4",
     "core-js": "^3.8.3",
+    "luxon": "^3.2.1",
     "roboto-fontface": "*",
     "v-calendar": "^3.0.0-alpha.8",
     "vue": "^3.2.13",
@@ -22,6 +25,7 @@
     "@vitejs/plugin-vue": "^3.0.3",
     "eslint": "^8.22.0",
     "eslint-plugin-vue": "^9.3.0",
+    "json-server": "^0.17.2",
     "sass": "^1.55.0",
     "vite": "^3.1.9",
     "vite-plugin-vuetify": "^1.0.0-alpha.12"
