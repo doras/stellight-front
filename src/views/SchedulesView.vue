@@ -120,8 +120,7 @@ import { DateTime } from 'luxon';
 import ScheduleItem from '@/components/ScheduleItem.vue';
 import { COLOR_ARRAY, STELLARS_API_URL, SCHEDULES_API_URL } from '@/utils/consts';
 import ScheduleDialog from '@/components/ScheduleDialog.vue';
-
-const formatDateTime = dateTime => dateTime.toISO().substring(0, 19);
+import { formatDateTime } from '@/utils/common';
 
 export default {
     data() {

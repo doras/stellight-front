@@ -25,8 +25,8 @@
       >
         <ScheduleDialog
           @close="dialog = false"
-          @modified="$emit('modified')"
-          @removed="$emit('removed')"
+          @modified="onModified"
+          @removed="onRemoved"
           :stellars="stellars"
           :schedule="schedule"
         ></ScheduleDialog>
@@ -45,8 +45,22 @@ export default {
   data() {
     return {
       color: COLOR_ARRAY[this.schedule.stellarId-1] ?? STELLIVE_COLOR_DARK,
-      time: DateTime.fromISO(this.schedule.startDateTime).toLocaleString({ hour: '2-digit', minute: '2-digit', hourCycle: 'h23'}),
       dialog: false
+    }
+  },
+  methods: {
+    onModified() {
+      this.dialog = false;
+      this.$emit('modified');
+    },
+    onRemoved() {
+      this.dialog = false;
+      this.$emit('removed');
+    }
+  },
+  computed: {
+    time() {
+      return DateTime.fromISO(this.schedule.startDateTime).toLocaleString({ hour: '2-digit', minute: '2-digit', hourCycle: 'h23'});
     }
   },
   components: { ScheduleDialog }

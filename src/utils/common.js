@@ -11,3 +11,5 @@ export function hasKoreanBatchim(korean) {
 export function maxBytesRuleFactory(maxBytes, label = "해당 값") {
     return v => getUTF8Length(v) <= maxBytes || `${label}${hasKoreanBatchim(label) ? "은" : "는"} ${maxBytes} Bytes 까지만 입력 가능합니다.`;
 }
+
+export const formatDateTime = dateTime => dateTime.toISO().substring(0, 19);
