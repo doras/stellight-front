@@ -18,25 +18,45 @@
       >
         {{ schedule.stellarNameKor }}: {{ `${schedule.isFixedTime ? time : ""} ${schedule.title}` }}
       </v-tooltip>
+      <v-dialog
+        v-model="dialog"
+        activator="parent"
+        width="600px"
+      >
+        <ScheduleDialog
+          @close="dialog = false"
+          @modified="$emit('modified')"
+          @removed="$emit('removed')"
+          :stellars="stellars"
+          :schedule="schedule"
+        ></ScheduleDialog>
+      </v-dialog>
     </p>
 </template>
 
 <script>
 import { DateTime } from "luxon";
 import { COLOR_ARRAY, STELLIVE_COLOR_DARK } from "../utils/consts";
+import ScheduleDialog from "./ScheduleDialog.vue";
 
 export default {
-  props: ["schedule"],
+  props: ["stellars", "schedule"],
+  emits: ["modified", "removed"],
   data() {
     return {
       color: COLOR_ARRAY[this.schedule.stellarId-1] ?? STELLIVE_COLOR_DARK,
-      time: DateTime.fromISO(this.schedule.startDateTime).toLocaleString({ hour: '2-digit', minute: '2-digit', hourCycle: 'h23'})
+      time: DateTime.fromISO(this.schedule.startDateTime).toLocaleString({ hour: '2-digit', minute: '2-digit', hourCycle: 'h23'}),
+      dialog: false
     }
   },
+  components: { ScheduleDialog }
 }
 </script>
 
 <style scoped>
+p {
+  cursor: pointer;
+}
 p.fixed {
   color: var(--item-color);
 }

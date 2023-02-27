@@ -89,7 +89,10 @@
                 <ScheduleItem
                   v-for="attr in attributes"
                   :key="attr.key"
+                  :stellars="stellars"
                   :schedule="attr.customData.schedule"
+                  @modified="onModifiedSchedule"
+                  @removed="onRemovedSchedule"
                 ></ScheduleItem>
               </div>
             </div>
@@ -187,6 +190,16 @@ export default {
       onSavedSchedule() {
         this.dialog = false;
         this.pushAlert("스케줄이 등록되었습니다.");
+        this.loadSchedules();
+      },
+      onModifiedSchedule() {
+        this.dialog = false;
+        this.pushAlert("스케줄이 수정되었습니다.");
+        this.loadSchedules();
+      },
+      onRemovedSchedule() {
+        this.dialog = false;
+        this.pushAlert("스케줄이 삭제되었습니다.");
         this.loadSchedules();
       },
       pushAlert(text, color = "success") {

@@ -2,7 +2,7 @@
   <v-form ref="form">
     <v-card>
       <v-card-title class="py-4">
-        <span class="text-h5">스케줄 추가</span>
+        <span class="text-h5">스케줄 {{ mode === "modify" ? "수정" : "추가" }}</span>
       </v-card-title>
       <v-card-text class="py-12">
         <v-alert
@@ -22,6 +22,7 @@
                 item-title="nameKor"
                 item-value="id"
                 :rules="[requiredRule]"
+                :disabled="mode === 'modify'"
               ></v-select>
             </v-col>
             <v-col
@@ -94,13 +95,31 @@
         >
           취소
         </v-btn>
-        <v-btn
-          color="blue-darken-1"
-          variant="text"
-          @click="save"
-        >
-          저장
-        </v-btn>
+        <span v-if="mode === 'create'">
+          <v-btn
+            color="blue-darken-1"
+            variant="text"
+            @click="save"
+          >
+            저장
+          </v-btn>
+        </span>
+        <span v-else>
+          <v-btn
+            color="red-darken-1"
+            variant="text"
+            @click="remove"
+          >
+            삭제
+          </v-btn>
+          <v-btn
+            color="blue-darken-1"
+            variant="text"
+            @click="modify"
+          >
+            수정
+          </v-btn>
+        </span>
       </v-card-actions>
     </v-card>
   </v-form>
@@ -109,21 +128,23 @@
 <script>
 import { getUTF8Length, requiredRule, maxBytesRuleFactory } from "@/utils/common";
 import { SCHEDULES_API_URL } from "@/utils/consts";
+import { DateTime } from "luxon";
 import { DatePicker } from "v-calendar";
 
 const titleMaxBytes = 255,
     remarkMaxBytes = 500;
 
 export default {
-  props: ["stellars"],
-  emits: ["close", "saved"],
+  props: ["stellars", "schedule"],
+  emits: ["close", "saved", "modified", "removed"],
   data() {
     return {
-      stellar: null,
-      isTimeNotFixed: false,
-      date: new Date(),
-      title: "",
-      remark: "",
+      mode: this.schedule ? "modify" : "create",
+      stellar: this.schedule ? this.stellars.find(e => e.id === this.schedule.stellarId) : null,
+      isTimeNotFixed: this.schedule ? !this.schedule.isFixedTime : false,
+      date: this.schedule ? DateTime.fromISO(this.schedule.startDateTime).toJSDate() : new Date(),
+      title: this.schedule ? this.schedule.title : "",
+      remark: this.schedule ? this.schedule.remark : "",
       modelConfig: {
         type: "string",
         mask: "YYYY-MM-DDTHH:mm:00"
@@ -155,31 +176,73 @@ export default {
     getUTF8Length,
     requiredRule,
     save() {
-      const vm = this;
       this.$refs.form.validate()
         .then(data => {
           if (!data.valid || !confirm("저장하시겠습니까?")) return;
           this.$axios.post(SCHEDULES_API_URL, {
-            stellarId: vm.stellar,
-            isFixedTime: !vm.isTimeNotFixed,
-            startDateTime: vm.date,
-            title: vm.title,
-            remark: vm.remark,
+            stellarId: this.stellar,
+            isFixedTime: !this.isTimeNotFixed,
+            startDateTime: this.date,
+            title: this.title,
+            remark: this.remark,
           })
             .then(response => {
               if (response.status === 200 || response.status === 201) {
-                vm.$emit("saved");
+                this.$emit("saved");
               } else {
-                vm.noticeError("스케줄 등록에 실패했습니다. 잠시 후 다시 시도해 주세요.");
-                console.error(response);
+                this.handleFail("등록", response);
               }
             })
             .catch(error => {
-              vm.noticeError("스케줄 등록 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
-              console.error(error);
+              this.handleError("등록", error);
             });
         })
         .catch(error => console.error(error));
+    },
+    modify() {
+      this.$refs.form.validate()
+        .then(data => {
+          if (!data.valid || !confirm("수정하시겠습니까?")) return;
+          this.$axios.put(`${SCHEDULES_API_URL}/${this.schedule.id}`, {
+            isFixedTime: !this.isTimeNotFixed,
+            startDateTime: this.date,
+            title: this.title,
+            remark: this.remark,
+          })
+            .then(response => {
+              if (response.status === 200 || response.status === 201) {
+                this.$emit("modified");
+              } else {
+                this.handleFail("수정", response);
+              }
+            })
+            .catch(error => {
+              this.handleError("수정", error)
+            });
+        })
+        .catch(error => console.error(error));
+    },
+    remove() {
+      if (!confirm("삭제하시겠습니까?")) return;
+      this.$axios.delete(`${SCHEDULES_API_URL}/${this.schedule.id}`)
+        .then(response => {
+          if (response.status === 200 || response.status === 201) {
+            this.$emit("removed");
+          } else {
+            this.handleFail("삭제", response);
+          }
+        })
+        .catch(error => {
+          this.handleError("삭제", error)
+        });
+    },
+    handleFail(opText, response) {
+      this.noticeError(`스케줄 ${opText}에 실패했습니다. 잠시 후 다시 시도해 주세요.`);
+      console.error(response);
+    },
+    handleError(opText, error) {
+      this.noticeError(`스케줄 ${opText} 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.`);
+      console.error(error);
     },
     noticeError(errorMsg) {
       this.isError = true;
