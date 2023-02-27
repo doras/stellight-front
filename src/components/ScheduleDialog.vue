@@ -126,7 +126,7 @@
 </template>
 
 <script>
-import { getUTF8Length, requiredRule, maxBytesRuleFactory } from "@/utils/common";
+import { getUTF8Length, requiredRule, maxBytesRuleFactory, formatDateTime } from "@/utils/common";
 import { SCHEDULES_API_URL } from "@/utils/consts";
 import { DateTime } from "luxon";
 import { DatePicker } from "v-calendar";
@@ -142,7 +142,7 @@ export default {
       mode: this.schedule ? "modify" : "create",
       stellar: this.schedule ? this.stellars.find(e => e.id === this.schedule.stellarId) : null,
       isTimeNotFixed: this.schedule ? !this.schedule.isFixedTime : false,
-      date: this.schedule ? DateTime.fromISO(this.schedule.startDateTime).toJSDate() : new Date(),
+      date: this.schedule ? this.schedule.startDateTime : formatDateTime(DateTime.now()),
       title: this.schedule ? this.schedule.title : "",
       remark: this.schedule ? this.schedule.remark : "",
       modelConfig: {
@@ -182,7 +182,7 @@ export default {
           this.$axios.post(SCHEDULES_API_URL, {
             stellarId: this.stellar,
             isFixedTime: !this.isTimeNotFixed,
-            startDateTime: this.date,
+            startDateTime: formatDateTime(DateTime.fromISO(this.date)),
             title: this.title,
             remark: this.remark,
           })
@@ -205,7 +205,7 @@ export default {
           if (!data.valid || !confirm("수정하시겠습니까?")) return;
           this.$axios.put(`${SCHEDULES_API_URL}/${this.schedule.id}`, {
             isFixedTime: !this.isTimeNotFixed,
-            startDateTime: this.date,
+            startDateTime: formatDateTime(DateTime.fromISO(this.date)),
             title: this.title,
             remark: this.remark,
           })
