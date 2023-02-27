@@ -16,7 +16,7 @@
         activator="parent"
         location="top"
       >
-        {{ schedule.stellarNameKor }}: {{ schedule.title }}
+        {{ schedule.stellarNameKor }}: {{ `${schedule.isFixedTime ? time : ""} ${schedule.title}` }}
       </v-tooltip>
     </p>
 </template>

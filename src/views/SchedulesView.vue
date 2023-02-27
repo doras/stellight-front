@@ -7,40 +7,71 @@
       :text="errorMsg"
       v-if="isError"
     ></v-alert>
+    <v-alert
+      v-for="item in alertList"
+      style="margin-bottom: 32px;"
+      :color="item.color"
+      :icon="`\$${item.color}`"
+      :text="item.text"
+      closable
+    ></v-alert>
     <v-row>
       <v-col
         cols="12"
         xl="2"
         lg="2"
       >
-        <v-card
-          class="mx-auto"
-          max-width="344"
-          variant="outlined"
-        >
-          <v-card-item>
-            <v-card-title>필터</v-card-title>
-          </v-card-item>
-          <v-card-text>
-            <v-form>
-              <v-checkbox 
-                label="전체" 
-                v-model="allStellarChecked"
-                density="compact"
-              ></v-checkbox>
-              <v-checkbox
-                v-for="(stellar, idx) in stellars"
-                :key="stellar.id"
-                :label="stellar.nameKor"
-                v-model="stellarIds"
-                :value="stellar.id"
-                hide-details="auto"
-                density="compact"
-                :color="colorArray[idx]"
-              ></v-checkbox>
-            </v-form>
-          </v-card-text>
-        </v-card>
+        <v-container>
+          <v-row>
+            <v-col
+              cols="6"
+              xl="12"
+              lg="12"
+            >
+              <v-card
+                class="mx-auto"
+                max-width="344"
+                variant="outlined"
+              >
+                <v-card-item>
+                  <v-card-title>필터</v-card-title>
+                </v-card-item>
+                <v-card-text>
+                  <v-form>
+                    <v-checkbox 
+                      label="전체" 
+                      v-model="allStellarChecked"
+                      density="compact"
+                    ></v-checkbox>
+                    <v-checkbox
+                      v-for="(stellar, idx) in stellars"
+                      :key="stellar.id"
+                      :label="stellar.nameKor"
+                      v-model="stellarIds"
+                      :value="stellar.id"
+                      hide-details="auto"
+                      density="compact"
+                      :color="colorArray[idx]"
+                    ></v-checkbox>
+                  </v-form>
+                </v-card-text>
+              </v-card>
+            </v-col>
+            <v-col
+              cols="6"
+              xl="12"
+              lg="12"
+              class="text-right"
+            >
+              <v-btn
+                icon="mdi-plus"
+                color="primary"
+                size="large"
+                @click="openDialogCreation"
+              ></v-btn>
+            </v-col>
+          </v-row>
+        </v-container>
       </v-col>
       <v-col>
         <Calendar
@@ -67,6 +98,17 @@
       </v-col>
     </v-row>
   </v-container>
+  <v-dialog
+    v-model="dialog"
+    width="600px"
+    persistent
+  >
+    <ScheduleDialog
+      @close="dialog = false"
+      @saved="onSavedSchedule"
+      :stellars="stellars"
+    ></ScheduleDialog>
+  </v-dialog>
 </template>
 
 <script>
@@ -74,6 +116,7 @@ import { Calendar } from 'v-calendar';
 import { DateTime } from 'luxon';
 import ScheduleItem from '@/components/ScheduleItem.vue';
 import { COLOR_ARRAY, STELLARS_API_URL, SCHEDULES_API_URL } from '@/utils/consts';
+import ScheduleDialog from '@/components/ScheduleDialog.vue';
 
 const formatDateTime = dateTime => dateTime.toISO().substring(0, 19);
 
@@ -92,6 +135,8 @@ export default {
             isError: false,
             errorMsg: "",
             schedules: [],
+            dialog: false,
+            alertList: [],
         };
     },
     created() {
@@ -109,7 +154,7 @@ export default {
     mounted() {
       this.loadSchedules();
     },
-    components: { Calendar, ScheduleItem },
+    components: { Calendar, ScheduleItem, ScheduleDialog },
     methods: {
       loadSchedules() {
         const { year, month } = this.$refs.calendar.firstPage;
@@ -135,6 +180,20 @@ export default {
       noticeError(errorMsg) {
         this.isError = true;
         this.errorMsg = errorMsg;
+      },
+      openDialogCreation() {
+        this.dialog = true;
+      },
+      onSavedSchedule() {
+        this.dialog = false;
+        this.pushAlert("스케줄이 등록되었습니다.");
+        this.loadSchedules();
+      },
+      pushAlert(text, color = "success") {
+        this.alertList.push({
+          text,
+          color,
+        });
       }
     },
     computed: {
