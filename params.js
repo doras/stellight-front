@@ -13,5 +13,8 @@ module.exports = (req, res, next) => {
   // if (req.query.stellarId) {
   //   req.query.stellarNameKor = db.get("stellars").find(element => element.id === Number(req.query.stellarId)).value()?.nameKor;
   // }
+  if(req.url === "/users-me?401") {
+    res.status(401);
+  }
   next();
 }

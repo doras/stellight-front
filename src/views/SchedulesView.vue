@@ -62,6 +62,7 @@
               xl="12"
               lg="12"
               class="text-right"
+              v-if="loginInfo.isLoggedIn"
             >
               <v-btn
                 icon="mdi-plus"
@@ -118,11 +119,16 @@
 import { Calendar } from 'v-calendar';
 import { DateTime } from 'luxon';
 import ScheduleItem from '@/components/ScheduleItem.vue';
-import { COLOR_ARRAY, STELLARS_API_URL, SCHEDULES_API_URL } from '@/utils/consts';
+import { COLOR_ARRAY, STELLARS_API_URL, SCHEDULES_API_URL, LOGIN_INFO_KEY } from '@/utils/consts';
 import ScheduleDialog from '@/components/ScheduleDialog.vue';
 import { formatDateTime } from '@/utils/common';
 
 export default {
+    inject: {
+      loginInfo: {
+        from: LOGIN_INFO_KEY,
+      }
+    },
     data() {
         const month = new Date().getMonth();
         const year = new Date().getFullYear();
