@@ -2,5 +2,7 @@
     "/api/v1/stellars": "/stellars",
     "/api/v1/stellars/:id": "/stellars/:id",
     "/api/v1/schedules": "/schedules",
-    "/api/v1/schedules/:id": "/schedules/:id"
+    "/api/v1/schedules/:id": "/schedules/:id",
+    "/api/v1/users/me": "/users-me",
+    "/api/v1/users/me?401": "/users-me?401"
 }

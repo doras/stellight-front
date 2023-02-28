@@ -1,47 +1,59 @@
 <template>
   <p class="d-inline-block text-truncate w-100"
-      :style="{ '--item-color': color }"
-      :class="{fixed: schedule.isFixedTime}"
+    :style="{ '--item-color': color }"
+    :class="{fixed: schedule.isFixedTime}"
+  >
+    <span 
+      v-if="schedule.isFixedTime"
     >
-      <span 
-        v-if="schedule.isFixedTime"
-      >
-        <v-icon 
-          icon="mdi-circle-medium"
-        ></v-icon>
-        {{ time }}
-      </span>
-      {{ schedule.title }}
-      <v-tooltip
-        activator="parent"
-        location="top"
-      >
-        {{ schedule.stellarNameKor }}: {{ `${schedule.isFixedTime ? time : ""} ${schedule.title}` }}
-      </v-tooltip>
-      <v-dialog
-        v-model="dialog"
-        activator="parent"
-        width="600px"
-      >
-        <ScheduleDialog
-          @close="dialog = false"
-          @modified="onModified"
-          @removed="onRemoved"
-          :stellars="stellars"
-          :schedule="schedule"
-        ></ScheduleDialog>
-      </v-dialog>
-    </p>
+      <v-icon 
+        icon="mdi-circle-medium"
+      ></v-icon>
+      {{ time }}
+    </span>
+    {{ schedule.title }}
+    <v-tooltip
+      activator="parent"
+      location="top"
+    >
+      {{ schedule.stellarNameKor }}: {{ `${schedule.isFixedTime ? time : ""} ${schedule.title}` }}
+    </v-tooltip>
+    <v-dialog
+      v-model="dialog"
+      activator="parent"
+      width="600px"
+    >
+      <ScheduleDialog
+        v-if="loginInfo.isLoggedIn"
+        @close="dialog = false"
+        @modified="onModified"
+        @removed="onRemoved"
+        :stellars="stellars"
+        :schedule="schedule"
+      ></ScheduleDialog>
+      <ScheduleDetailDialog
+        v-else
+        @close="dialog = false"
+        :schedule="schedule"
+      ></ScheduleDetailDialog>
+    </v-dialog>
+  </p>
 </template>
 
 <script>
 import { DateTime } from "luxon";
-import { COLOR_ARRAY, STELLIVE_COLOR_DARK } from "../utils/consts";
+import { COLOR_ARRAY, STELLIVE_COLOR_DARK, LOGIN_INFO_KEY } from "@/utils/consts";
 import ScheduleDialog from "./ScheduleDialog.vue";
+import ScheduleDetailDialog from "./ScheduleDetailDialog.vue";
 
 export default {
   props: ["stellars", "schedule"],
   emits: ["modified", "removed"],
+  inject: {
+    loginInfo: {
+      from: LOGIN_INFO_KEY,
+    }
+  },
   data() {
     return {
       color: COLOR_ARRAY[this.schedule.stellarId-1] ?? STELLIVE_COLOR_DARK,
@@ -63,7 +75,7 @@ export default {
       return DateTime.fromISO(this.schedule.startDateTime).toLocaleString({ hour: '2-digit', minute: '2-digit', hourCycle: 'h23'});
     }
   },
-  components: { ScheduleDialog }
+  components: { ScheduleDialog, ScheduleDetailDialog }
 }
 </script>
 

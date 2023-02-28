@@ -20,5 +20,6 @@ export function registerPlugins (app) {
     .use(router)
     .use(axiosPlugin)
     .use(SetupCalendar, {})
+  app.config.unwrapInjectedRef = true
 
 }
