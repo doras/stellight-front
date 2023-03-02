@@ -1,17 +1,17 @@
 <template>
-  <v-form ref="form">
-    <v-card>
-      <v-card-title class="py-4">
-        <span class="text-h5">스케줄 {{ mode === "modify" ? "수정" : "추가" }}</span>
-      </v-card-title>
-      <v-card-text class="py-12">
-        <v-alert
-          style="margin-bottom: 32px;"
-          color="error"
-          icon="$error"
-          :text="errorMsg"
-          v-if="isError"
-        ></v-alert>
+  <v-card>
+    <v-card-title class="py-4">
+      <span class="text-h5">스케줄 {{ mode === "modify" ? "수정" : "추가" }}</span>
+    </v-card-title>
+    <v-card-text class="py-12">
+      <v-alert
+        style="margin-bottom: 32px;"
+        color="error"
+        icon="$error"
+        :text="errorMsg"
+        v-if="isError"
+      ></v-alert>
+      <v-form ref="form">
         <v-container>
           <v-row>
             <v-col cols="12">
@@ -85,44 +85,44 @@
             </v-col>
           </v-row>
         </v-container>
-        <small>*는 필수 값입니다.</small>
-      </v-card-text>
-      <v-card-actions>
-        <v-spacer></v-spacer>
+      </v-form>
+      <small>*는 필수 값입니다.</small>
+    </v-card-text>
+    <v-card-actions>
+      <v-spacer></v-spacer>
+      <v-btn
+        variant="text"
+        @click="closeDialog"
+      >
+        취소
+      </v-btn>
+      <span v-if="mode === 'create'">
         <v-btn
+          color="blue-darken-1"
           variant="text"
-          @click="closeDialog"
+          @click="save"
         >
-          취소
+          저장
         </v-btn>
-        <span v-if="mode === 'create'">
-          <v-btn
-            color="blue-darken-1"
-            variant="text"
-            @click="save"
-          >
-            저장
-          </v-btn>
-        </span>
-        <span v-else>
-          <v-btn
-            color="red-darken-1"
-            variant="text"
-            @click="remove"
-          >
-            삭제
-          </v-btn>
-          <v-btn
-            color="blue-darken-1"
-            variant="text"
-            @click="modify"
-          >
-            수정
-          </v-btn>
-        </span>
-      </v-card-actions>
-    </v-card>
-  </v-form>
+      </span>
+      <span v-else>
+        <v-btn
+          color="red-darken-1"
+          variant="text"
+          @click="remove"
+        >
+          삭제
+        </v-btn>
+        <v-btn
+          color="blue-darken-1"
+          variant="text"
+          @click="modify"
+        >
+          수정
+        </v-btn>
+      </span>
+    </v-card-actions>
+  </v-card>
 </template>
 
 <script>
