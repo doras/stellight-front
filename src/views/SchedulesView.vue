@@ -23,11 +23,7 @@
       >
         <v-container>
           <v-row>
-            <v-col
-              cols="6"
-              xl="12"
-              lg="12"
-            >
+            <v-col>
               <v-card
                 class="mx-auto"
                 max-width="344"
@@ -56,20 +52,6 @@
                   </v-form>
                 </v-card-text>
               </v-card>
-            </v-col>
-            <v-col
-              cols="6"
-              xl="12"
-              lg="12"
-              class="text-right"
-              v-if="loginInfo.isLoggedIn"
-            >
-              <v-btn
-                icon="mdi-plus"
-                color="primary"
-                size="large"
-                @click="openDialogCreation"
-              ></v-btn>
             </v-col>
           </v-row>
         </v-container>
@@ -113,6 +95,14 @@
       :stellars="stellars"
     ></ScheduleDialog>
   </v-dialog>
+  <div class="fab-div" v-if="loginInfo.isLoggedIn">
+    <v-btn
+        icon="mdi-plus"
+        color="primary"
+        size="large"
+        @click="openDialogCreation"
+      ></v-btn>
+  </div>
 </template>
 
 <script>
@@ -244,5 +234,12 @@ export default {
 <style scoped>
 .day-div {
   height: 100px;
+}
+
+.fab-div {
+  position: fixed;
+  bottom: 50px;
+  right: 50px;
+  z-index: 1;
 }
 </style>

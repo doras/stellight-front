@@ -3,20 +3,17 @@
     flat 
     style="border-bottom: 1px solid rgb(0, 0, 0, 0.12); background-color: rgba(255,255,255,.7);"
   >
-    <v-container>
-      <v-row>
-        <v-col cols="6">
+    <v-container class="d-flex">
           <router-link 
-            v-for="link in links"
+            v-for="(link, idx) in links"
             :to="link.to"
             :key="link.text"
+            :class="{ 'me-auto': idx === links.length-1 }"
           >
-            <v-btn variant="text">
+            <v-btn variant="text" :class="[xs ? 'text-body-2' : '']">
                 {{ link.text }}
             </v-btn>
           </router-link>
-        </v-col>
-        <v-col cols="6" class="text-right">
           <v-progress-circular 
             indeterminate
             v-if="!loginInfo.isLoaded"
@@ -28,6 +25,7 @@
             >
               <v-btn
                 prepend-icon="mdi-login"
+                :class="[xs ? 'text-body-2' : '']"
               >
                   Login
               </v-btn>
@@ -38,20 +36,24 @@
             >
               <v-btn
                 prepend-icon="mdi-logout"
+                :class="[xs ? 'text-body-2' : '']"
               >
                   Logout
               </v-btn>
             </a>
           </span>
-        </v-col>
-      </v-row>
     </v-container>
   </v-app-bar>
 </template>
 
 <script>
   import { LOGIN_INFO_KEY } from '@/utils/consts';
+  import { useDisplay } from 'vuetify';
   export default {
+    setup() {
+      const { xs } = useDisplay();
+      return { xs };
+    },
     inject: {
       loginInfo: {
         from: LOGIN_INFO_KEY,

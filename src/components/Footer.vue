@@ -15,29 +15,27 @@ const icons = ref([
   
 <template>
   <v-footer
-    class="d-flex flex-column"
+    class="text-center d-flex flex-column"
     style="background-color: #9ab6f0; color: #EAEBFF;"
   >
-    <div class="d-flex w-50 align-center px-4">
-      <span>
-        <a
-        v-for="iconItem in icons"
-        :key="iconItem.icon"
-        target="_blank"
-        :href="iconItem.link"
-        >
+    <div>
+      <a
+      v-for="iconItem in icons"
+      :key="iconItem.icon"
+      target="_blank"
+      :href="iconItem.link"
+      >
         <v-btn
-        class="mx-4"
-        :icon="iconItem.icon"
-        variant="text"
-          ></v-btn>
-        </a>
-      </span>
-      <v-spacer></v-spacer>
-      <span>
-        2023 — <strong>doras</strong>
-        ( shoon0113@gmail.com )
-      </span>
+          class="mx-4"
+          :icon="iconItem.icon"
+          variant="text"
+        ></v-btn>
+      </a>
+    </div>
+    <v-spacer></v-spacer>
+    <div class="info">
+      2023 — <strong>doras</strong>
+      ( shoon0113@gmail.com )
     </div>
   </v-footer>
 </template>
@@ -46,5 +44,9 @@ const icons = ref([
 a {
   color: inherit;
   text-decoration: inherit;
+}
+
+div.info {
+  font-size: 15px;
 }
 </style>
