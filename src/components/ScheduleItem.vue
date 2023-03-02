@@ -15,6 +15,7 @@
     <v-tooltip
       activator="parent"
       location="top"
+      v-if="!mobile"
     >
       {{ schedule.stellarNameKor }}: {{ `${schedule.isFixedTime ? time : ""} ${schedule.title}` }}
     </v-tooltip>
@@ -45,6 +46,7 @@ import { DateTime } from "luxon";
 import { COLOR_ARRAY, STELLIVE_COLOR_DARK, LOGIN_INFO_KEY } from "@/utils/consts";
 import ScheduleDialog from "./ScheduleDialog.vue";
 import ScheduleDetailDialog from "./ScheduleDetailDialog.vue";
+import { useDisplay } from "vuetify";
 
 export default {
   props: ["stellars", "schedule"],
@@ -53,6 +55,10 @@ export default {
     loginInfo: {
       from: LOGIN_INFO_KEY,
     }
+  },
+  setup() {
+    const { mobile } = useDisplay();
+    return { mobile };
   },
   data() {
     return {
