@@ -24,7 +24,7 @@
         <v-container>
           <v-row>
             <v-col
-              cols="6"
+              :cols="loginInfo.isLoggedIn ? 6 : 12"
               xl="12"
               lg="12"
             >
