@@ -145,7 +145,7 @@ export default {
           vm.stellarIds = response.data.map(s => s.id);
         })
         .catch(error => {
-          vm.noticeError("스텔라 목록 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+          vm.noticeError(`스텔라 목록 조회 중 오류가 발생했습니다. ${error.response.data.message}`);
           console.log(error);
         });
     },
@@ -171,7 +171,7 @@ export default {
             vm.schedules = response.data;
           })
           .catch(error => {
-            vm.noticeError("스케줄 목록 조회 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+            vm.noticeError(`스케줄 목록 조회 중 오류가 발생했습니다. ${error.response.data.message}`);
             console.log(error);
           });
       },

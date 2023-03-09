@@ -186,15 +186,11 @@ export default {
             title: this.title,
             remark: this.remark,
           })
-            .then(response => {
-              if (response.status === 200 || response.status === 201) {
-                this.$emit("saved");
-              } else {
-                this.handleFail("등록", response);
-              }
+            .then(() => {
+              this.$emit("saved");
             })
             .catch(error => {
-              this.handleError("등록", error);
+              this.noticeError(error.response.data.message);
             });
         })
         .catch(error => console.error(error));
@@ -209,15 +205,11 @@ export default {
             title: this.title,
             remark: this.remark,
           })
-            .then(response => {
-              if (response.status === 200 || response.status === 201) {
-                this.$emit("modified");
-              } else {
-                this.handleFail("수정", response);
-              }
+            .then(() => {
+              this.$emit("modified");
             })
             .catch(error => {
-              this.handleError("수정", error)
+              this.noticeError(error.response.data.message);
             });
         })
         .catch(error => console.error(error));
@@ -225,24 +217,12 @@ export default {
     remove() {
       if (!confirm("삭제하시겠습니까?")) return;
       this.$axios.delete(`${SCHEDULES_API_URL}/${this.schedule.id}`)
-        .then(response => {
-          if (response.status === 200 || response.status === 201) {
-            this.$emit("removed");
-          } else {
-            this.handleFail("삭제", response);
-          }
+        .then(() => {
+          this.$emit("removed");
         })
         .catch(error => {
-          this.handleError("삭제", error)
+          this.noticeError(error.response.data.message);
         });
-    },
-    handleFail(opText, response) {
-      this.noticeError(`스케줄 ${opText}에 실패했습니다. 잠시 후 다시 시도해 주세요.`);
-      console.error(response);
-    },
-    handleError(opText, error) {
-      this.noticeError(`스케줄 ${opText} 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.`);
-      console.error(error);
     },
     noticeError(errorMsg) {
       this.isError = true;
