@@ -168,7 +168,19 @@ export default {
         const vm = this;
         this.$axios.get(SCHEDULES_API_URL, { params })
           .then(response => {
-            vm.schedules = response.data;
+            vm.schedules = response.data.map(elem => {
+              elem.jsDate = DateTime.fromISO(elem.startDateTime).toJSDate();
+              return elem;
+            }).sort((a, b) => {
+              // fixed time first
+              if (a.isFixedTime !== b.isFixedTime) return b.isFixedTime - a.isFixedTime;
+
+              // sort by date time
+              if (a.jsDate.getTime() !== b.jsDate.getTime()) return a.jsDate.getTime() - b.jsDate.getTime();
+
+              // sort by stellar id
+              return a.stellarId - b.stellarId;
+            });
           })
           .catch(error => {
             vm.noticeError(`스케줄 목록 조회 중 오류가 발생했습니다. ${error.response.data.message}`);
@@ -218,13 +230,13 @@ export default {
         }
       },
       attributes() {
-        return this.schedules.filter(elem => this.stellarIds.includes(elem.stellarId)).map(elem => ({
+        return this.schedules.filter(elem => this.stellarIds.includes(elem.stellarId)).map((elem, idx) => ({
           key: elem.id,
           customData: {
-            // class: `stellar-${elem.stellarId} ${elem.isFixedTime ? "fixed" : ""}`,
             schedule: elem,
           },
-          dates: DateTime.fromISO(elem.startDateTime).toJSDate(),
+          dates: elem.jsDate,
+          order: idx,
         }))
       }
     },
