@@ -7,14 +7,16 @@
       :text="errorMsg"
       v-if="isError"
     ></v-alert>
-    <v-alert
-      v-for="item in alertList"
-      style="margin-bottom: 32px;"
-      :color="item.color"
-      :icon="`\$${item.color}`"
-      :text="item.text"
-      closable
-    ></v-alert>
+    <v-fade-transition>
+      <v-alert
+        v-for="item in alertList"
+        :key="item.key"
+        style="margin-bottom: 32px;"
+        :color="item.color"
+        :icon="`\$${item.color}`"
+        :text="item.text"
+      ></v-alert>
+    </v-fade-transition>
     <v-row>
       <v-col
         cols="12"
@@ -104,6 +106,8 @@ import ScheduleItem from '@/components/ScheduleItem.vue';
 import { COLOR_ARRAY, STELLARS_API_URL, SCHEDULES_API_URL, LOGIN_INFO_KEY } from '@/utils/consts';
 import ScheduleDialog from '@/components/ScheduleDialog.vue';
 import { formatDateTime } from '@/utils/common';
+
+let alertKey = 0;
 
 export default {
     inject: {
@@ -202,10 +206,16 @@ export default {
         this.loadSchedules();
       },
       pushAlert(text, color = "success") {
+        const key = alertKey++;
         this.alertList.push({
+          key,
           text,
           color,
         });
+        // 3초 뒤 자동으로 alert 제거
+        setInterval(() => {
+          this.alertList = this.alertList.filter(alert => alert.key !== key);
+        }, 3000);
       }
     },
     computed: {
