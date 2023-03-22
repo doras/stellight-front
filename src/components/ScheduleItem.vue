@@ -5,10 +5,8 @@
   >
     <span 
       v-if="schedule.isFixedTime"
+      class="time-span"
     >
-      <v-icon 
-        icon="mdi-circle-medium"
-      ></v-icon>
       {{ time }}
     </span>
     {{ schedule.title }}
@@ -114,5 +112,15 @@ p:not(.fixed):after {
   right: 10px;
   bottom: 0;
   z-index: -1;
+}
+
+.time-span::before {
+  content: "";
+  display: inline-block;
+  width: 3px;
+  height: 15px;
+  background-color: var(--item-color);
+  margin-right: 3px;
+  vertical-align: middle;
 }
 </style>
