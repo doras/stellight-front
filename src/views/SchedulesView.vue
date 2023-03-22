@@ -21,40 +21,32 @@
         xl="2"
         lg="2"
       >
-        <v-container>
-          <v-row>
-            <v-col>
-              <v-card
-                class="mx-auto"
-                max-width="344"
-                variant="outlined"
-              >
-                <v-card-item>
-                  <v-card-title>필터</v-card-title>
-                </v-card-item>
-                <v-card-text>
-                  <v-form>
-                    <v-checkbox 
-                      label="전체" 
-                      v-model="allStellarChecked"
-                      density="compact"
-                    ></v-checkbox>
-                    <v-checkbox
-                      v-for="(stellar, idx) in stellars"
-                      :key="stellar.id"
-                      :label="stellar.nameKor"
-                      v-model="stellarIds"
-                      :value="stellar.id"
-                      hide-details="auto"
-                      density="compact"
-                      :color="colorArray[idx]"
-                    ></v-checkbox>
-                  </v-form>
-                </v-card-text>
-              </v-card>
-            </v-col>
-          </v-row>
-        </v-container>
+        <v-card
+          variant="outlined"
+        >
+          <v-card-item>
+            <v-card-title>필터</v-card-title>
+          </v-card-item>
+          <v-card-text>
+            <v-form>
+              <v-checkbox 
+                label="전체" 
+                v-model="allStellarChecked"
+                density="compact"
+              ></v-checkbox>
+              <v-checkbox
+                v-for="(stellar, idx) in stellars"
+                :key="stellar.id"
+                :label="stellar.nameKor"
+                v-model="stellarIds"
+                :value="stellar.id"
+                hide-details="auto"
+                density="compact"
+                :color="colorArray[idx]"
+              ></v-checkbox>
+            </v-form>
+          </v-card-text>
+        </v-card>
       </v-col>
       <v-col>
         <Calendar
@@ -67,7 +59,7 @@
         >
           <template v-slot:day-content="{ day, attributes }">
             <div class="day-div">
-              <span class="">{{ day.day }}</span>
+              <span :class='{ "today" : day.isToday }'>{{ day.day }}</span>
               <div class="text-body-2">
                 <ScheduleItem
                   v-for="attr in attributes"
@@ -168,7 +160,19 @@ export default {
         const vm = this;
         this.$axios.get(SCHEDULES_API_URL, { params })
           .then(response => {
-            vm.schedules = response.data;
+            vm.schedules = response.data.map(elem => {
+              elem.jsDate = DateTime.fromISO(elem.startDateTime).toJSDate();
+              return elem;
+            }).sort((a, b) => {
+              // fixed time first
+              if (a.isFixedTime !== b.isFixedTime) return b.isFixedTime - a.isFixedTime;
+
+              // sort by date time
+              if (a.jsDate.getTime() !== b.jsDate.getTime()) return a.jsDate.getTime() - b.jsDate.getTime();
+
+              // sort by stellar id
+              return a.stellarId - b.stellarId;
+            });
           })
           .catch(error => {
             vm.noticeError(`스케줄 목록 조회 중 오류가 발생했습니다. ${error.response.data.message}`);
@@ -218,13 +222,13 @@ export default {
         }
       },
       attributes() {
-        return this.schedules.filter(elem => this.stellarIds.includes(elem.stellarId)).map(elem => ({
+        return this.schedules.filter(elem => this.stellarIds.includes(elem.stellarId)).map((elem, idx) => ({
           key: elem.id,
           customData: {
-            // class: `stellar-${elem.stellarId} ${elem.isFixedTime ? "fixed" : ""}`,
             schedule: elem,
           },
-          dates: DateTime.fromISO(elem.startDateTime).toJSDate(),
+          dates: elem.jsDate,
+          order: idx,
         }))
       }
     },
@@ -241,5 +245,12 @@ export default {
   bottom: 50px;
   right: 50px;
   z-index: 1;
+}
+
+.today {
+  background-color: #87a9ed;
+  border-radius: 25px;
+  color: #fff;
+  padding: 3px;
 }
 </style>
