@@ -21,40 +21,32 @@
         xl="2"
         lg="2"
       >
-        <v-container>
-          <v-row>
-            <v-col>
-              <v-card
-                class="mx-auto"
-                max-width="344"
-                variant="outlined"
-              >
-                <v-card-item>
-                  <v-card-title>필터</v-card-title>
-                </v-card-item>
-                <v-card-text>
-                  <v-form>
-                    <v-checkbox 
-                      label="전체" 
-                      v-model="allStellarChecked"
-                      density="compact"
-                    ></v-checkbox>
-                    <v-checkbox
-                      v-for="(stellar, idx) in stellars"
-                      :key="stellar.id"
-                      :label="stellar.nameKor"
-                      v-model="stellarIds"
-                      :value="stellar.id"
-                      hide-details="auto"
-                      density="compact"
-                      :color="colorArray[idx]"
-                    ></v-checkbox>
-                  </v-form>
-                </v-card-text>
-              </v-card>
-            </v-col>
-          </v-row>
-        </v-container>
+        <v-card
+          variant="outlined"
+        >
+          <v-card-item>
+            <v-card-title>필터</v-card-title>
+          </v-card-item>
+          <v-card-text>
+            <v-form>
+              <v-checkbox 
+                label="전체" 
+                v-model="allStellarChecked"
+                density="compact"
+              ></v-checkbox>
+              <v-checkbox
+                v-for="(stellar, idx) in stellars"
+                :key="stellar.id"
+                :label="stellar.nameKor"
+                v-model="stellarIds"
+                :value="stellar.id"
+                hide-details="auto"
+                density="compact"
+                :color="colorArray[idx]"
+              ></v-checkbox>
+            </v-form>
+          </v-card-text>
+        </v-card>
       </v-col>
       <v-col>
         <Calendar
