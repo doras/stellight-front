@@ -67,7 +67,7 @@
         >
           <template v-slot:day-content="{ day, attributes }">
             <div class="day-div">
-              <span class="">{{ day.day }}</span>
+              <span :class='{ "today" : day.isToday }'>{{ day.day }}</span>
               <div class="text-body-2">
                 <ScheduleItem
                   v-for="attr in attributes"
@@ -241,5 +241,12 @@ export default {
   bottom: 50px;
   right: 50px;
   z-index: 1;
+}
+
+.today {
+  background-color: #87a9ed;
+  border-radius: 25px;
+  color: #fff;
+  padding: 3px;
 }
 </style>
