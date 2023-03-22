@@ -247,7 +247,7 @@ export default {
 
 <style scoped>
 .day-div {
-  height: 100px;
+  min-height: 100px;
 }
 
 .fab-div {
