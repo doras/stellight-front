@@ -95,7 +95,6 @@ p:not(.fixed) {
   width: 100%;
   background-color: white;
   color: white;
-  float: left;
   padding-left: 5px;
   padding-right: 10px;
   position: relative;
