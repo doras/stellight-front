@@ -7,7 +7,7 @@
       :text="errorMsg"
       v-if="isError"
     ></v-alert>
-    <v-fade-transition>
+    <TransitionGroup name="fade">
       <v-alert
         v-for="item in alertList"
         :key="item.key"
@@ -16,7 +16,7 @@
         :icon="`\$${item.color}`"
         :text="item.text"
       ></v-alert>
-    </v-fade-transition>
+    </TransitionGroup>
     <v-row>
       <v-col
         cols="12"
@@ -263,4 +263,15 @@ export default {
   color: #fff;
   padding: 3px;
 }
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
 </style>
