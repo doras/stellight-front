@@ -14,6 +14,7 @@ import { createApp } from 'vue'
 import { registerPlugins } from '@/plugins'
 
 import '@/assets/global.css'
+import 'core-js/stable'
 
 const app = createApp(App)
 

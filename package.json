@@ -18,7 +18,7 @@
     "v-calendar": "^3.0.0-alpha.8",
     "vue": "^3.2.13",
     "vue-router": "^4.0.0",
-    "vuetify": "^3.0.0",
+    "vuetify": "^3.1.11",
     "webfontloader": "^1.0.0"
   },
   "devDependencies": {
