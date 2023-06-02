@@ -17,6 +17,13 @@
         :text="item.text"
       ></v-alert>
     </TransitionGroup>
+    <v-select
+      v-model="calendarView"
+      :items="calendarViewItems"
+      item-title="title"
+      item-value="value"
+      variant="outlined"
+    ></v-select>
     <v-row>
       <v-col
         cols="12"
@@ -54,10 +61,12 @@
         <Calendar
           :masks="masks"
           :attributes="attributes"
-          is-expanded
-          class="mx-auto w-100"
+          expanded
+          class="mx-auto w-100 calendar"
+          :class="calendarView"
           ref="calendar"
           @transition-end="loadSchedules"
+          :view="calendarView"
         >
           <template v-slot:day-content="{ day, attributes }">
             <div class="day-div">
@@ -116,22 +125,27 @@ export default {
       }
     },
     data() {
-        const month = new Date().getMonth();
-        const year = new Date().getFullYear();
-        return {
-            masks: {
-                title: "YYYY년 MMM",
-                weekdays: "WWW",
-            },
-            colorArray: COLOR_ARRAY,
-            stellars: [],
-            stellarIds: [],
-            isError: false,
-            errorMsg: "",
-            schedules: [],
-            dialog: false,
-            alertList: [],
-        };
+      const month = new Date().getMonth();
+      const year = new Date().getFullYear();
+      return {
+        masks: {
+          title: "YYYY년 MMM",
+          weekdays: "WWW",
+        },
+        colorArray: COLOR_ARRAY,
+        stellars: [],
+        stellarIds: [],
+        isError: false,
+        errorMsg: "",
+        schedules: [],
+        dialog: false,
+        alertList: [],
+        calendarView: "weekly",
+        calendarViewItems: [
+          { title: "주간", value: "weekly" },
+          { title: "월간", value: "monthly"},
+        ],
+      };
     },
     created() {
       const vm = this;
@@ -151,10 +165,23 @@ export default {
     components: { Calendar, ScheduleItem, ScheduleDialog },
     methods: {
       loadSchedules() {
-        const { year, month } = this.$refs.calendar.firstPage;
+        let firstDateTime = null;
+        let lastDateTime = null;
 
-        const firstDateTime = DateTime.local(year, month);
-        const lastDateTime = firstDateTime.endOf("month");
+        // if calendar is weekly
+        if (this.calendarView === "weekly") {
+          const viewDays = this.$refs.calendar.firstPage.viewDays;
+
+          firstDateTime = DateTime.fromJSDate(viewDays[0].date);
+          lastDateTime = DateTime.fromJSDate(viewDays[viewDays.length - 1].date).endOf("day");
+        // if calendar is monthly
+        } else {
+          const { year, month } = this.$refs.calendar.firstPage;
+
+          firstDateTime = DateTime.local(year, month);
+          lastDateTime = firstDateTime.endOf("month");
+        }
+
 
         const params = {
           startDateTimeAfter: formatDateTime(firstDateTime),
