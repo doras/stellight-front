@@ -1,7 +1,29 @@
 {
   "stellars": [
-        { "id": 1, "nameKor": "아이리 칸나" },
-        { "id": 2, "nameKor": "아야츠노 유니" }
+    {
+      "id": 1,
+      "nameKor": "아이리 칸나"
+    },
+    {
+      "id": 2,
+      "nameKor": "아야츠노 유니"
+    },
+    {
+      "id": 3,
+      "nameKor": "아라하시 타비"
+    },
+    {
+      "id": 4,
+      "nameKor": "아카네 리제"
+    },
+    {
+      "id": 5,
+      "nameKor": "시라유키 히나"
+    },
+    {
+      "id": 6,
+      "nameKor": "네네코 마시로"
+    }
   ],
   "schedules": [
     {
