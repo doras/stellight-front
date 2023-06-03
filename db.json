@@ -1,17 +1,75 @@
 {
   "stellars": [
-        { "id": 1, "nameKor": "아이리 칸나" },
-        { "id": 2, "nameKor": "아야츠노 유니" }
+    {
+      "id": 1,
+      "nameKor": "아이리 칸나"
+    },
+    {
+      "id": 2,
+      "nameKor": "아야츠노 유니"
+    },
+    {
+      "id": 3,
+      "nameKor": "아라하시 타비"
+    },
+    {
+      "id": 4,
+      "nameKor": "아카네 리제"
+    },
+    {
+      "id": 5,
+      "nameKor": "시라유키 히나"
+    },
+    {
+      "id": 6,
+      "nameKor": "네네코 마시로"
+    }
   ],
   "schedules": [
     {
-            "id": 1, 
-            "stellarId": 1,
-            "stellarNameKor": "아이리 칸나",
+      "id": 1,
+      "stellarId": 1,
+      "stellarNameKor": "아이리 칸나",
       "isFixedTime": true,
       "startDateTime": "2023-02-24T21:00:00",
       "title": "더포레스트2 합방",
-            "remark": "강지님, 유니님 합방"
+      "remark": "강지님, 유니님 합방"
+    },
+    {
+      "id": 5,
+      "stellarId": 2,
+      "stellarNameKor": "아야츠노 유니",
+      "isFixedTime": true,
+      "startDateTime": "2023-02-24T15:00:00",
+      "title": "더포레스트2 합방",
+      "remark": "강지님, 유니님 합방"
+    },
+    {
+      "id": 6,
+      "stellarId": 2,
+      "stellarNameKor": "아야츠노 유니",
+      "isFixedTime": false,
+      "startDateTime": "2023-02-24T00:00:00",
+      "title": "더포레스트2 합방",
+      "remark": "강지님, 유니님 합방"
+    },
+    {
+      "id": 7,
+      "stellarId": 1,
+      "stellarNameKor": "아이리 칸나",
+      "isFixedTime": true,
+      "startDateTime": "2023-02-24T15:00:00",
+      "title": "더포레스트2 합방",
+      "remark": "강지님, 유니님 합방"
+    },
+    {
+      "id": 8,
+      "stellarId": 1,
+      "stellarNameKor": "아이리 칸나",
+      "isFixedTime": false,
+      "startDateTime": "2023-02-24T00:00:00",
+      "title": "더포레스트2 합방",
+      "remark": "강지님, 유니님 합방"
     },
     {
       "id": 2,

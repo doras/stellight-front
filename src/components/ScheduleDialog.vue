@@ -44,13 +44,13 @@
               xl="6"
             >
               <DatePicker
-                v-model="date"
+                v-model.string="date"
                 :mode="isTimeNotFixed ? 'date' : 'dateTime'"
                 is24hr
-                :minute-increment="5"
-                :model-config="modelConfig"
+                :rules="datepickerRules"
                 is-required
                 :masks="masks"
+                hide-time-header
               >
                 <template v-slot="{ inputValue, inputEvents }">
                   <v-text-field
@@ -145,13 +145,13 @@ export default {
       date: this.schedule ? this.schedule.startDateTime : formatDateTime(DateTime.now()),
       title: this.schedule ? this.schedule.title : "",
       remark: this.schedule ? this.schedule.remark : "",
-      modelConfig: {
-        type: "string",
-        mask: "YYYY-MM-DDTHH:mm:00"
-      },
       masks: {
           title: "YYYY년 MMM",
           weekdays: "WWW",
+          modelValue: "YYYY-MM-DDTHH:mm:00",
+      },
+      datepickerRules:  {
+        minutes: { interval : 5 },
       },
       dateRules: [
         requiredRule,
