@@ -278,6 +278,11 @@ export default {
         }))
       }
     },
+    watch: {
+      calendarView() {
+        this.loadSchedules();
+      }
+    }
 };
 </script>
 
