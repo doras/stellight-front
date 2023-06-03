@@ -12,6 +12,27 @@
     border-right: none;
 }
 
-.calendar.weekly.vc-container .vc-day {
+.calendar.weekly .vc-day {
     min-height: 300px;
+}
+
+@media screen and (max-width: 960px) {
+    .calendar.weekly .vc-weekdays {
+        display: none;
+    }
+
+    .calendar.weekly .vc-week {
+        display: block;
+    }
+
+    .calendar.weekly .vc-day {
+        min-height: 0;
+        padding: 5px;
+        border-right: none;
+        border-bottom: 1px solid #ccc;
+    }
+    
+    .calendar.weekly .vc-day:last-of-type {
+        border-bottom: none;
+    }
 }

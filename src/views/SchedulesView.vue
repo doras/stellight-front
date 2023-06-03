@@ -70,7 +70,13 @@
         >
           <template v-slot:day-content="{ day, attributes }">
             <div class="day-div">
-              <span :class='{ "today" : day.isToday }'>{{ day.day }}</span>
+              <span :class='{ "today" : day.isToday }'>
+                {{ day.day }}
+                <!-- In weekly view and sm or xs device, show day name -->
+                <span v-if="calendarView === 'weekly' && smAndDown">
+                  ({{ day.locale.dayNamesShort[day.weekday-1] }})
+                </span>
+              </span>
               <div class="text-body-2">
                 <ScheduleItem
                   v-for="attr in attributes"
@@ -115,6 +121,7 @@ import ScheduleItem from '@/components/ScheduleItem.vue';
 import { COLOR_ARRAY, STELLARS_API_URL, SCHEDULES_API_URL, LOGIN_INFO_KEY } from '@/utils/consts';
 import ScheduleDialog from '@/components/ScheduleDialog.vue';
 import { formatDateTime } from '@/utils/common';
+import { useDisplay } from 'vuetify';
 
 let alertKey = 0;
 
@@ -127,6 +134,7 @@ export default {
     data() {
       const month = new Date().getMonth();
       const year = new Date().getFullYear();
+      const { smAndDown } = useDisplay();
       return {
         masks: {
           title: "YYYY년 MMM",
@@ -145,6 +153,7 @@ export default {
           { title: "주간", value: "weekly" },
           { title: "월간", value: "monthly"},
         ],
+        smAndDown,
       };
     },
     created() {
