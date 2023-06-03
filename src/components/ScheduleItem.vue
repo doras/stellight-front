@@ -41,7 +41,7 @@
 
 <script>
 import { DateTime } from "luxon";
-import { COLOR_ARRAY, STELLIVE_COLOR_DARK, LOGIN_INFO_KEY } from "@/utils/consts";
+import { COLOR_ARRAY, LOGIN_INFO_KEY } from "@/utils/consts";
 import ScheduleDialog from "./ScheduleDialog.vue";
 import ScheduleDetailDialog from "./ScheduleDetailDialog.vue";
 import { useDisplay } from "vuetify";
@@ -60,7 +60,7 @@ export default {
   },
   data() {
     return {
-      color: COLOR_ARRAY[this.schedule.stellarId-1] ?? STELLIVE_COLOR_DARK,
+      color: COLOR_ARRAY[this.schedule.stellarId-1] ?? "#000",
       dialog: false
     }
   },

@@ -10,8 +10,8 @@ import vuetify from './vuetify'
 import router from '../router'
 import axiosPlugin from '../../axios';
 
-import { SetupCalendar } from 'v-calendar';
-import 'v-calendar/dist/style.css';
+import { setupCalendar } from 'v-calendar';
+import 'v-calendar/style.css';
 
 export function registerPlugins (app) {
   loadFonts()
@@ -19,7 +19,7 @@ export function registerPlugins (app) {
     .use(vuetify)
     .use(router)
     .use(axiosPlugin)
-    .use(SetupCalendar, {})
+    .use(setupCalendar, {})
   app.config.unwrapInjectedRef = true
 
 }
