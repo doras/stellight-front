@@ -160,8 +160,10 @@ export default {
       const vm = this;
       this.$axios.get(STELLARS_API_URL)
         .then(response => {
-          vm.stellars = response.data;
-          vm.stellarIds = response.data.map(s => s.id);
+          const sortedData = response.data.sort((a, b) => a.generation - b.generation || a.debutOrder - b.debutOrder);
+
+          vm.stellars = sortedData;
+          vm.stellarIds = sortedData.map(s => s.id);
         })
         .catch(error => {
           vm.noticeError(`스텔라 목록 조회 중 오류가 발생했습니다. ${error.response.data.message}`);
