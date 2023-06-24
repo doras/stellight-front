@@ -51,7 +51,7 @@
                 :value="stellar.id"
                 hide-details="auto"
                 density="compact"
-                :color="colorArray[idx]"
+                :color="`#${stellar.personalColor}`"
               ></v-checkbox>
             </v-form>
           </v-card-text>
@@ -118,7 +118,7 @@
 import { Calendar } from 'v-calendar';
 import { DateTime } from 'luxon';
 import ScheduleItem from '@/components/ScheduleItem.vue';
-import { COLOR_ARRAY, STELLARS_API_URL, SCHEDULES_API_URL, LOGIN_INFO_KEY } from '@/utils/consts';
+import { STELLARS_API_URL, SCHEDULES_API_URL, LOGIN_INFO_KEY } from '@/utils/consts';
 import ScheduleDialog from '@/components/ScheduleDialog.vue';
 import { formatDateTime } from '@/utils/common';
 import { useDisplay } from 'vuetify';
@@ -140,7 +140,6 @@ export default {
           title: "YYYY년 MMM",
           weekdays: "WWW",
         },
-        colorArray: COLOR_ARRAY,
         stellars: [],
         stellarIds: [],
         isError: false,
@@ -160,8 +159,10 @@ export default {
       const vm = this;
       this.$axios.get(STELLARS_API_URL)
         .then(response => {
-          vm.stellars = response.data;
-          vm.stellarIds = response.data.map(s => s.id);
+          const sortedData = response.data.sort((a, b) => a.generation - b.generation || a.debutOrder - b.debutOrder);
+
+          vm.stellars = sortedData;
+          vm.stellarIds = sortedData.map(s => s.id);
         })
         .catch(error => {
           vm.noticeError(`스텔라 목록 조회 중 오류가 발생했습니다. ${error.response.data.message}`);
