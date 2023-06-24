@@ -1,6 +1,6 @@
 <template>
   <p class="d-inline-block text-truncate w-100"
-    :style="{ '--item-color': color }"
+    :style="{ '--item-color': `#${stellars.find(e => e.id === schedule.stellarId)?.personalColor ?? '000'}` }"
     :class="{fixed: schedule.isFixedTime}"
   >
     <span 
@@ -41,7 +41,7 @@
 
 <script>
 import { DateTime } from "luxon";
-import { COLOR_ARRAY, LOGIN_INFO_KEY } from "@/utils/consts";
+import { LOGIN_INFO_KEY } from "@/utils/consts";
 import ScheduleDialog from "./ScheduleDialog.vue";
 import ScheduleDetailDialog from "./ScheduleDetailDialog.vue";
 import { useDisplay } from "vuetify";
@@ -60,7 +60,6 @@ export default {
   },
   data() {
     return {
-      color: COLOR_ARRAY[this.schedule.stellarId-1] ?? "#000",
       dialog: false
     }
   },

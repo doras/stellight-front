@@ -2,27 +2,45 @@
   "stellars": [
     {
       "id": 1,
-      "nameKor": "아이리 칸나"
+      "nameKor": "아이리 칸나",
+      "generation": 1,
+      "debutOrder": 1,
+      "personalColor": "373584"
     },
     {
       "id": 2,
-      "nameKor": "아야츠노 유니"
+      "nameKor": "아야츠노 유니",
+      "generation": 1,
+      "debutOrder": 2,
+      "personalColor": "b77de4"
     },
     {
       "id": 3,
-      "nameKor": "시라유키 히나"
+      "nameKor": "시라유키 히나",
+      "generation": 2,
+      "debutOrder": 1,
+      "personalColor": "dfb387"
     },
     {
       "id": 4,
-      "nameKor": "네네코 마시로"
+      "nameKor": "네네코 마시로",
+      "generation": 2,
+      "debutOrder": 2,
+      "personalColor": "757875"
     },
     {
       "id": 5,
-      "nameKor": "아카네 리제"
+      "nameKor": "아카네 리제",
+      "generation": 2,
+      "debutOrder": 3,
+      "personalColor": "d34344"
     },
     {
       "id": 6,
-      "nameKor": "아라하시 타비"
+      "nameKor": "아라하시 타비",
+      "generation": 2,
+      "debutOrder": 4,
+      "personalColor": "50d3f0"
     }
   ],
   "schedules": [
