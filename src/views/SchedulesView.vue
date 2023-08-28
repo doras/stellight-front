@@ -118,7 +118,7 @@
 import { Calendar } from 'v-calendar';
 import { DateTime } from 'luxon';
 import ScheduleItem from '@/components/ScheduleItem.vue';
-import { STELLARS_API_URL, SCHEDULES_API_URL, LOGIN_INFO_KEY } from '@/utils/consts';
+import { STELLARS_API_URL, SCHEDULES_API_URL, LOGIN_INFO_KEY, LS_KEY_SCHEDULE_FILTER_STELLAR_IDS } from '@/utils/consts';
 import ScheduleDialog from '@/components/ScheduleDialog.vue';
 import { formatDateTime } from '@/utils/common';
 import { useDisplay } from 'vuetify';
@@ -162,7 +162,11 @@ export default {
           const sortedData = response.data.sort((a, b) => a.generation - b.generation || a.debutOrder - b.debutOrder);
 
           vm.stellars = sortedData;
-          vm.stellarIds = sortedData.map(s => s.id);
+
+          // load stellar filter info from local storage
+          // and set the filter
+          const loadedStellarIds = JSON.parse(localStorage.getItem(LS_KEY_SCHEDULE_FILTER_STELLAR_IDS));
+          vm.stellarIds = response.data.filter(s => loadedStellarIds.includes(s.id)).map(s => s.id);
         })
         .catch(error => {
           vm.noticeError(`스텔라 목록 조회 중 오류가 발생했습니다. ${error.response.data.message}`);
@@ -282,6 +286,9 @@ export default {
     watch: {
       calendarView() {
         this.loadSchedules();
+      },
+      stellarIds() {
+        localStorage.setItem(LS_KEY_SCHEDULE_FILTER_STELLAR_IDS, JSON.stringify(this.stellarIds));
       }
     }
 };
