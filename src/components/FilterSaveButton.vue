@@ -1,10 +1,22 @@
 <template>
   <v-tooltip
-    text="이 기기에 현재 필터 정보를 기본값으로 저장합니다."
+    text="현재 필터 정보를 이 기기의 기본값으로 저장합니다."
     location="top"
   >
     <template v-slot:activator="{ props }">
-      <v-btn 
+      <v-btn v-if="lg"
+        icon="mdi-content-save"
+        variant="text"
+        border 
+        @click="buttonClicked"
+        :loading="loading"
+        v-bind="props"
+      >
+        <template v-slot:loader>
+          <v-icon icon="mdi-check-circle"></v-icon>
+        </template>
+      </v-btn>
+      <v-btn v-else
         prepend-icon="mdi-content-save"
         variant="text"
         border 
@@ -22,11 +34,15 @@
 </template>
 
 <script>
+import { useDisplay } from 'vuetify';
+
 export default {
   props: ["clickFuncSuper"],
   data() {
+    const { lg } = useDisplay();
     return {
       loading: false,
+      lg,
     }
   },
   methods: {
