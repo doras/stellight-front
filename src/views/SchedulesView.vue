@@ -35,6 +35,9 @@
         >
           <v-card-item>
             <v-card-title>필터</v-card-title>
+            <template v-slot:append>
+              <FilterSaveButton :clickFuncSuper="saveFilter" />
+            </template>
           </v-card-item>
           <v-card-text>
             <v-form>
@@ -122,6 +125,7 @@ import { STELLARS_API_URL, SCHEDULES_API_URL, LOGIN_INFO_KEY, LS_KEY_SCHEDULE_FI
 import ScheduleDialog from '@/components/ScheduleDialog.vue';
 import { formatDateTime } from '@/utils/common';
 import { useDisplay } from 'vuetify';
+import FilterSaveButton from '@/components/FilterSaveButton.vue';
 
 let alertKey = 0;
 
@@ -176,7 +180,7 @@ export default {
     mounted() {
       this.loadSchedules();
     },
-    components: { Calendar, ScheduleItem, ScheduleDialog },
+    components: { Calendar, ScheduleItem, ScheduleDialog, FilterSaveButton },
     methods: {
       loadSchedules() {
         let firstDateTime = null;
@@ -257,7 +261,10 @@ export default {
         setInterval(() => {
           this.alertList = this.alertList.filter(alert => alert.key !== key);
         }, 3000);
-      }
+      },
+      saveFilter() {
+        localStorage.setItem(LS_KEY_SCHEDULE_FILTER_STELLAR_IDS, JSON.stringify(this.stellarIds));
+      },
     },
     computed: {
       allStellarChecked: {
@@ -286,9 +293,6 @@ export default {
     watch: {
       calendarView() {
         this.loadSchedules();
-      },
-      stellarIds() {
-        localStorage.setItem(LS_KEY_SCHEDULE_FILTER_STELLAR_IDS, JSON.stringify(this.stellarIds));
       }
     }
 };
