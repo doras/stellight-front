@@ -171,8 +171,13 @@ export default {
           // if it is not stored yet, all stellar filter should be selected by default (except the case of empty array in local storage)
           const stellarIds = localStorage.getItem(LS_KEY_SCHEDULE_FILTER_STELLAR_IDS);
           if (stellarIds) {
-            const parsedStellarIds = JSON.parse(stellarIds);
-            vm.stellarIds = sortedData.filter(s => parsedStellarIds.includes(s.id)).map(s => s.id);
+            try {
+              const parsedStellarIds = JSON.parse(stellarIds);
+              vm.stellarIds = sortedData.filter(s => parsedStellarIds.includes(s.id)).map(s => s.id);
+            } catch (e) {
+              console.error("Error parsing stellarIds from localStorage:", e);
+              vm.stellarIds = sortedData.map(s => s.id);
+            }
           } else {
             vm.stellarIds = sortedData.map(s => s.id);
           }
