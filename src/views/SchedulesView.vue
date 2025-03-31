@@ -167,10 +167,20 @@ export default {
 
           vm.stellars = sortedData;
 
-          // load stellar filter info from local storage
-          // and set the filter
-          const loadedStellarIds = JSON.parse(localStorage.getItem(LS_KEY_SCHEDULE_FILTER_STELLAR_IDS));
-          vm.stellarIds = response.data.filter(s => loadedStellarIds.includes(s.id)).map(s => s.id);
+          // load filter info from local storage and set the filter to it
+          // if it is not stored yet, all stellar filter should be selected by default (except the case of empty array in local storage)
+          const stellarIds = localStorage.getItem(LS_KEY_SCHEDULE_FILTER_STELLAR_IDS);
+          if (stellarIds) {
+            try {
+              const parsedStellarIds = JSON.parse(stellarIds);
+              vm.stellarIds = sortedData.filter(s => parsedStellarIds.includes(s.id)).map(s => s.id);
+            } catch (e) {
+              console.error("Error parsing stellarIds from localStorage:", e);
+              vm.stellarIds = sortedData.map(s => s.id);
+            }
+          } else {
+            vm.stellarIds = sortedData.map(s => s.id);
+          }
         })
         .catch(error => {
           vm.noticeError(`스텔라 목록 조회 중 오류가 발생했습니다. ${error.response.data.message}`);
