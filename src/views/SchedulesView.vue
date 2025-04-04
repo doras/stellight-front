@@ -49,13 +49,20 @@
               <v-checkbox
                 v-for="(stellar, idx) in stellars"
                 :key="stellar.id"
-                :label="stellar.nameKor"
                 v-model="stellarIds"
                 :value="stellar.id"
                 hide-details="auto"
                 density="compact"
                 :color="`#${stellar.personalColor}`"
-              ></v-checkbox>
+              >
+                <template v-slot:label>
+                  <span class="filter-label"
+                    :class="{ 'graduated': stellar.isGraduated }"
+                  >
+                    {{ stellar.nameKor }} <span v-if="stellar.isGraduated">{{ stellar.generation > 0 ? "(졸업생)" : "(퇴사자)" }}</span>
+                  </span>
+                </template>
+              </v-checkbox>
             </v-form>
           </v-card-text>
         </v-card>
@@ -335,6 +342,14 @@ export default {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.filter-label {
+  color: #000;
+}
+
+.filter-label.graduated {
+  color: #888;
 }
 
 </style>
