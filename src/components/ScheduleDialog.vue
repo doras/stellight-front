@@ -18,7 +18,7 @@
               <v-select
                 label="스텔라 선택*"
                 v-model="stellar"
-                :items="stellars"
+                :items="validStellars"
                 item-title="nameKor"
                 item-value="id"
                 :rules="[requiredRule]"
@@ -227,6 +227,11 @@ export default {
     noticeError(errorMsg) {
       this.isError = true;
       this.errorMsg = errorMsg;
+    },
+  },
+  computed: {
+    validStellars() {
+      return this.stellars.filter(e => e.isGraduated === false);
     },
   },
   components: { DatePicker },
