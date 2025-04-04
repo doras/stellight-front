@@ -6,7 +6,8 @@
       "generation": 1,
       "debutOrder": 1,
       "personalColor": "373584",
-      "emoji": "🐉"
+      "emoji": "🐉",
+      "isGraduated": true
     },
     {
       "id": 2,
@@ -14,7 +15,8 @@
       "generation": 1,
       "debutOrder": 2,
       "personalColor": "b77de4",
-      "emoji": "☪️"
+      "emoji": "☪️",
+      "isGraduated": false
     },
     {
       "id": 3,
@@ -22,7 +24,8 @@
       "generation": 2,
       "debutOrder": 1,
       "personalColor": "dfb387",
-      "emoji": "🎀"
+      "emoji": "🎀",
+      "isGraduated": false
     },
     {
       "id": 4,
@@ -30,7 +33,8 @@
       "generation": 2,
       "debutOrder": 2,
       "personalColor": "757875",
-      "emoji": "🧇"
+      "emoji": "🧇",
+      "isGraduated": false
     },
     {
       "id": 5,
@@ -38,7 +42,8 @@
       "generation": 2,
       "debutOrder": 3,
       "personalColor": "d34344",
-      "emoji": "🍷"
+      "emoji": "🍷",
+      "isGraduated": false
     },
     {
       "id": 6,
@@ -46,7 +51,8 @@
       "generation": 2,
       "debutOrder": 4,
       "personalColor": "50d3f0",
-      "emoji": "🧭"
+      "emoji": "🧭",
+      "isGraduated": false
     },
     {
       "id": 7,
@@ -54,7 +60,8 @@
       "generation": 0,
       "debutOrder": 1,
       "personalColor": "8182b8",
-      "emoji": "🥔"
+      "emoji": "🥔",
+      "isGraduated": false
     },
     {
       "id": 8,
@@ -62,7 +69,8 @@
       "generation": 3,
       "debutOrder": 1,
       "personalColor": "794EB7",
-      "emoji": "⛩️"
+      "emoji": "⛩️",
+      "isGraduated": false
     },
     {
       "id": 9,
@@ -70,7 +78,8 @@
       "generation": 3,
       "debutOrder": 2,
       "personalColor": "7299F4",
-      "emoji": "🛼"
+      "emoji": "🛼",
+      "isGraduated": false
     },
     {
       "id": 10,
@@ -78,7 +87,8 @@
       "generation": 3,
       "debutOrder": 3,
       "personalColor": "FFAABA",
-      "emoji": "🔫"
+      "emoji": "🔫",
+      "isGraduated": false
     },
     {
       "id": 11,
@@ -86,7 +96,8 @@
       "generation": 3,
       "debutOrder": 4,
       "personalColor": "6DD65C",
-      "emoji": "⚔️"
+      "emoji": "⚔️",
+      "isGraduated": false
     },
     {
       "id": 12,
@@ -94,7 +105,8 @@
       "generation": 0,
       "debutOrder": 2,
       "personalColor": "222222",
-      "emoji": "🐦‍⬛"
+      "emoji": "🐦‍⬛",
+      "isGraduated": true
     }
   ],
   "schedules": [
