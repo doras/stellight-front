@@ -5,42 +5,96 @@
       "nameKor": "아이리 칸나",
       "generation": 1,
       "debutOrder": 1,
-      "personalColor": "373584"
+      "personalColor": "373584",
+      "emoji": "🐉"
     },
     {
       "id": 2,
       "nameKor": "아야츠노 유니",
       "generation": 1,
       "debutOrder": 2,
-      "personalColor": "b77de4"
+      "personalColor": "b77de4",
+      "emoji": "☪️"
     },
     {
       "id": 3,
       "nameKor": "시라유키 히나",
       "generation": 2,
       "debutOrder": 1,
-      "personalColor": "dfb387"
+      "personalColor": "dfb387",
+      "emoji": "🎀"
     },
     {
       "id": 4,
       "nameKor": "네네코 마시로",
       "generation": 2,
       "debutOrder": 2,
-      "personalColor": "757875"
+      "personalColor": "757875",
+      "emoji": "🧇"
     },
     {
       "id": 5,
       "nameKor": "아카네 리제",
       "generation": 2,
       "debutOrder": 3,
-      "personalColor": "d34344"
+      "personalColor": "d34344",
+      "emoji": "🍷"
     },
     {
       "id": 6,
       "nameKor": "아라하시 타비",
       "generation": 2,
       "debutOrder": 4,
-      "personalColor": "50d3f0"
+      "personalColor": "50d3f0",
+      "emoji": "🧭"
+    },
+    {
+      "id": 7,
+      "nameKor": "강지",
+      "generation": 0,
+      "debutOrder": 1,
+      "personalColor": "8182b8",
+      "emoji": "🥔"
+    },
+    {
+      "id": 8,
+      "nameKor": "텐코 시부키",
+      "generation": 3,
+      "debutOrder": 1,
+      "personalColor": "794EB7",
+      "emoji": "⛩️"
+    },
+    {
+      "id": 9,
+      "nameKor": "아오쿠모 린",
+      "generation": 3,
+      "debutOrder": 2,
+      "personalColor": "7299F4",
+      "emoji": "🛼"
+    },
+    {
+      "id": 10,
+      "nameKor": "하나코 나나",
+      "generation": 3,
+      "debutOrder": 3,
+      "personalColor": "FFAABA",
+      "emoji": "🔫"
+    },
+    {
+      "id": 11,
+      "nameKor": "유즈하 리코",
+      "generation": 3,
+      "debutOrder": 4,
+      "personalColor": "6DD65C",
+      "emoji": "⚔️"
+    },
+    {
+      "id": 12,
+      "nameKor": "이브",
+      "generation": 0,
+      "debutOrder": 2,
+      "personalColor": "222222",
+      "emoji": "🐦‍⬛"
     }
   ],
   "schedules": [
