@@ -59,7 +59,7 @@
                   <span class="filter-label"
                     :class="{ 'graduated': stellar.isGraduated }"
                   >
-                    {{ stellar.nameKor }} <span v-if="stellar.isGraduated">{{ stellar.generation > 0 ? "(졸업생)" : "(퇴사자)" }}</span>
+                    {{ stellar?.emoji ?? '' }} {{ stellar.nameKor }} <span v-if="stellar.isGraduated">{{ stellar.generation > 0 ? "(졸업생)" : "(퇴사자)" }}</span>
                   </span>
                 </template>
               </v-checkbox>
