@@ -36,3 +36,9 @@
         border-bottom: none;
     }
 }
+
+img.emoji {
+    height: 1em;
+    vertical-align: middle;
+    margin: 0 0.1em;
+}
