@@ -1,20 +1,13 @@
 <template>
   <p class="d-inline-block text-truncate w-100"
-    :style="{ '--item-color': `#${stellar?.personalColor ?? '000'}` }"
+    :style="{ '--item-color': `#${stellars.find(e => e.id === schedule.stellarId)?.personalColor ?? '000'}` }"
     :class="{fixed: schedule.isFixedTime}"
   >
     <span 
       v-if="schedule.isFixedTime"
       class="time-span"
     >
-      {{ stellar?.emoji ?? '' }}
       {{ time }}
-    </span>
-    <span 
-      v-else
-      style="padding-right: 3px;"
-    >
-      {{ stellar?.emoji ?? '' }}
     </span>
     {{ schedule.title }}
     <v-tooltip
@@ -81,10 +74,6 @@ export default {
     }
   },
   computed: {
-    // Precompute the stellar object
-    stellar() {
-      return this.stellars.find(e => e.id === this.schedule.stellarId) || null;
-    },
     time() {
       return DateTime.fromISO(this.schedule.startDateTime).toLocaleString({ hour: '2-digit', minute: '2-digit', hourCycle: 'h23'});
     }
@@ -117,7 +106,7 @@ p:not(.fixed):after {
   display: block;
   position: absolute;
   top: 0;
-  left: 25px;
+  left: 0;
   right: 10px;
   bottom: 0;
   z-index: -1;
