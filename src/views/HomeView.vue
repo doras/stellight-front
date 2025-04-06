@@ -5,7 +5,7 @@
         <a 
           class="text-decoration-none" 
           target="_blank" 
-          href="https://twitter.com/StelLive_kr"
+          href="https://stellive.me/"
         >
           StelLive
         </a>

@@ -35,6 +35,9 @@
         >
           <v-card-item>
             <v-card-title>필터</v-card-title>
+            <template v-slot:append>
+              <FilterSaveButton :clickFuncSuper="saveFilter" />
+            </template>
           </v-card-item>
           <v-card-text>
             <v-form>
@@ -46,13 +49,20 @@
               <v-checkbox
                 v-for="(stellar, idx) in stellars"
                 :key="stellar.id"
-                :label="stellar.nameKor"
                 v-model="stellarIds"
                 :value="stellar.id"
                 hide-details="auto"
                 density="compact"
                 :color="`#${stellar.personalColor}`"
-              ></v-checkbox>
+              >
+                <template v-slot:label>
+                  <span class="filter-label"
+                    :class="{ 'graduated': stellar.isGraduated }"
+                  >
+                    {{ stellar?.emoji ?? '' }} {{ stellar.nameKor }} <span v-if="stellar.isGraduated">{{ stellar.generation > 0 ? "(졸업생)" : "(퇴사자)" }}</span>
+                  </span>
+                </template>
+              </v-checkbox>
             </v-form>
           </v-card-text>
         </v-card>
@@ -118,10 +128,11 @@
 import { Calendar } from 'v-calendar';
 import { DateTime } from 'luxon';
 import ScheduleItem from '@/components/ScheduleItem.vue';
-import { STELLARS_API_URL, SCHEDULES_API_URL, LOGIN_INFO_KEY } from '@/utils/consts';
+import { STELLARS_API_URL, SCHEDULES_API_URL, LOGIN_INFO_KEY, LS_KEY_SCHEDULE_FILTER_STELLAR_IDS } from '@/utils/consts';
 import ScheduleDialog from '@/components/ScheduleDialog.vue';
 import { formatDateTime } from '@/utils/common';
 import { useDisplay } from 'vuetify';
+import FilterSaveButton from '@/components/FilterSaveButton.vue';
 
 let alertKey = 0;
 
@@ -162,7 +173,21 @@ export default {
           const sortedData = response.data.sort((a, b) => a.generation - b.generation || a.debutOrder - b.debutOrder);
 
           vm.stellars = sortedData;
-          vm.stellarIds = sortedData.map(s => s.id);
+
+          // load filter info from local storage and set the filter to it
+          // if it is not stored yet, all stellar filter should be selected by default (except the case of empty array in local storage)
+          const stellarIds = localStorage.getItem(LS_KEY_SCHEDULE_FILTER_STELLAR_IDS);
+          if (stellarIds) {
+            try {
+              const parsedStellarIds = JSON.parse(stellarIds);
+              vm.stellarIds = sortedData.filter(s => parsedStellarIds.includes(s.id)).map(s => s.id);
+            } catch (e) {
+              console.error("Error parsing stellarIds from localStorage:", e);
+              vm.stellarIds = sortedData.map(s => s.id);
+            }
+          } else {
+            vm.stellarIds = sortedData.map(s => s.id);
+          }
         })
         .catch(error => {
           vm.noticeError(`스텔라 목록 조회 중 오류가 발생했습니다. ${error.response.data.message}`);
@@ -172,7 +197,7 @@ export default {
     mounted() {
       this.loadSchedules();
     },
-    components: { Calendar, ScheduleItem, ScheduleDialog },
+    components: { Calendar, ScheduleItem, ScheduleDialog, FilterSaveButton },
     methods: {
       loadSchedules() {
         let firstDateTime = null;
@@ -253,7 +278,10 @@ export default {
         setInterval(() => {
           this.alertList = this.alertList.filter(alert => alert.key !== key);
         }, 3000);
-      }
+      },
+      saveFilter() {
+        localStorage.setItem(LS_KEY_SCHEDULE_FILTER_STELLAR_IDS, JSON.stringify(this.stellarIds));
+      },
     },
     computed: {
       allStellarChecked: {
@@ -314,6 +342,14 @@ export default {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.filter-label {
+  color: #000;
+}
+
+.filter-label.graduated {
+  color: #888;
 }
 
 </style>
