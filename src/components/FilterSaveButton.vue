@@ -4,19 +4,7 @@
     location="top"
   >
     <template v-slot:activator="{ props }">
-      <v-btn v-if="lg"
-        icon="mdi-content-save"
-        variant="text"
-        border 
-        @click="buttonClicked"
-        :loading="loading"
-        v-bind="props"
-      >
-        <template v-slot:loader>
-          <v-icon icon="mdi-check-circle"></v-icon>
-        </template>
-      </v-btn>
-      <v-btn v-else
+      <v-btn
         prepend-icon="mdi-content-save"
         variant="text"
         border 
@@ -34,15 +22,11 @@
 </template>
 
 <script>
-import { useDisplay } from 'vuetify';
-
 export default {
   props: ["clickFuncSuper"],
   data() {
-    const { lg } = useDisplay();
     return {
       loading: false,
-      lg,
     }
   },
   methods: {
