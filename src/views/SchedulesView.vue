@@ -58,8 +58,8 @@
                   <span class="filter-label"
                     :class="{ 'graduated': stellar.isGraduated }"
                   >
-                    <span v-emoji style="margin: 0 1px;">{{ stellar?.emoji ?? '' }}</span>
-                    <span style="vertical-align: middle; margin-left: 3px;">{{ stellar.nameKor }}</span>
+                    <span v-emoji class="emoji-span">{{ stellar?.emoji ?? '' }}</span>
+                    <span class="name-span">{{ stellar.nameKor }}</span>
                     <span v-if="stellar.isGraduated">{{ stellar.generation > 0 ? "(졸업생)" : "(퇴사자)" }}</span>
                   </span>
                 </template>
@@ -351,6 +351,15 @@ export default {
 
 .filter-label.graduated {
   color: #888;
+}
+
+.emoji-span {
+  margin: 0 1px;
+}
+
+.name-span {
+  vertical-align: middle;
+  margin-left: 3px;
 }
 
 </style>
