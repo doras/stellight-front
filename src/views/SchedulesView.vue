@@ -28,7 +28,6 @@
       <v-col
         cols="12"
         xl="2"
-        lg="2"
       >
         <v-card
           variant="outlined"
@@ -59,7 +58,9 @@
                   <span class="filter-label"
                     :class="{ 'graduated': stellar.isGraduated }"
                   >
-                    {{ stellar?.emoji ?? '' }} {{ stellar.nameKor }} <span v-if="stellar.isGraduated">{{ stellar.generation > 0 ? "(졸업생)" : "(퇴사자)" }}</span>
+                    <span v-emoji style="margin: 0 1px;">{{ stellar?.emoji ?? '' }}</span>
+                    <span style="vertical-align: middle; margin-left: 3px;">{{ stellar.nameKor }}</span>
+                    <span v-if="stellar.isGraduated">{{ stellar.generation > 0 ? "(졸업생)" : "(퇴사자)" }}</span>
                   </span>
                 </template>
               </v-checkbox>
@@ -83,7 +84,7 @@
               <span :class='{ "today" : day.isToday }'>
                 {{ day.day }}
                 <!-- In weekly view and sm or xs device, show day name -->
-                <span v-if="calendarView === 'weekly' && smAndDown">
+                <span v-if="calendarView === 'weekly' && mdAndDown">
                   ({{ day.locale.dayNamesShort[day.weekday-1] }})
                 </span>
               </span>
@@ -145,7 +146,7 @@ export default {
     data() {
       const month = new Date().getMonth();
       const year = new Date().getFullYear();
-      const { smAndDown } = useDisplay();
+      const { mdAndDown } = useDisplay();
       return {
         masks: {
           title: "YYYY년 MMM",
@@ -163,7 +164,7 @@ export default {
           { title: "주간", value: "weekly" },
           { title: "월간", value: "monthly"},
         ],
-        smAndDown,
+        mdAndDown,
       };
     },
     created() {
