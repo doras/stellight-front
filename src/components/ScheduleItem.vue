@@ -7,17 +7,17 @@
       v-if="schedule.isFixedTime"
       class="time-span"
     >
-      <span v-emoji style="margin: 3px;">{{ stellar?.emoji ?? '' }}</span>
+      <span v-emoji class="emoji-span fixed-emoji-span">{{ stellar?.emoji ?? '' }}</span>
       <span>{{ time }}</span>
     </span>
     <span 
       v-else
       v-emoji
-      style="padding-right: 8px;"
+      class="emoji-span"
     >
       {{ stellar?.emoji ?? '' }}
     </span>
-    <span style="padding-left: 3px;">{{ schedule.title }}</span>
+    <span class="title-span">{{ schedule.title }}</span>
     <v-tooltip
       activator="parent"
       location="top"
@@ -132,5 +132,18 @@ p:not(.fixed):after {
   background-color: var(--item-color);
   margin-right: 3px;
   vertical-align: middle;
+}
+
+.emoji-span {
+  margin-left: 1px;
+  margin-right: 5px;
+}
+
+.fixed-emoji-span {
+  margin-left: 0;
+}
+
+.title-span {
+  padding-left: 3px;
 }
 </style>
