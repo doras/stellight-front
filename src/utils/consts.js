@@ -7,3 +7,4 @@ export const
 
 const LS_SCHEDULE_PREFIX = "schedule_";
 export const LS_KEY_SCHEDULE_FILTER_STELLAR_IDS = `${LS_SCHEDULE_PREFIX}filter_stellar_ids`;
+export const LS_KEY_CALENDAR_VIEW_MODE = `${LS_SCHEDULE_PREFIX}calendar_view_mode`;
