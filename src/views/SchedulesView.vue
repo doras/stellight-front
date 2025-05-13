@@ -129,7 +129,7 @@
 import { Calendar } from 'v-calendar';
 import { DateTime } from 'luxon';
 import ScheduleItem from '@/components/ScheduleItem.vue';
-import { STELLARS_API_URL, SCHEDULES_API_URL, LOGIN_INFO_KEY, LS_KEY_SCHEDULE_FILTER_STELLAR_IDS } from '@/utils/consts';
+import { STELLARS_API_URL, SCHEDULES_API_URL, LOGIN_INFO_KEY, LS_KEY_SCHEDULE_FILTER_STELLAR_IDS, LS_KEY_CALENDAR_VIEW_MODE } from '@/utils/consts';
 import ScheduleDialog from '@/components/ScheduleDialog.vue';
 import { formatDateTime } from '@/utils/common';
 import { useDisplay } from 'vuetify';
@@ -144,9 +144,12 @@ export default {
       }
     },
     data() {
-      const month = new Date().getMonth();
-      const year = new Date().getFullYear();
       const { mdAndDown } = useDisplay();
+      const calendarViewItems = [
+        { title: "주간", value: "weekly" },
+        { title: "월간", value: "monthly" },
+      ];
+      const storedCalendarView = localStorage.getItem(LS_KEY_CALENDAR_VIEW_MODE);
       return {
         masks: {
           title: "YYYY년 MMM",
@@ -159,11 +162,8 @@ export default {
         schedules: [],
         dialog: false,
         alertList: [],
-        calendarView: "weekly",
-        calendarViewItems: [
-          { title: "주간", value: "weekly" },
-          { title: "월간", value: "monthly"},
-        ],
+        calendarView: calendarViewItems.some(item => item.value === storedCalendarView) ? storedCalendarView : "weekly",
+        calendarViewItems,
         mdAndDown,
       };
     },
@@ -309,7 +309,9 @@ export default {
       }
     },
     watch: {
-      calendarView() {
+      calendarView(newValue) {
+        // Save the most recently set calendar view mode to localStorage
+        localStorage.setItem(LS_KEY_CALENDAR_VIEW_MODE, newValue);
         this.loadSchedules();
       }
     }
