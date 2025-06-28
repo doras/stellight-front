@@ -222,12 +222,13 @@ export default {
         const params = {
           startDateTimeAfter: formatDateTime(firstDateTime),
           startDateTimeBefore: formatDateTime(lastDateTime),
+          size: 1000, // limit the number of schedules to 1000
         };
 
         const vm = this;
         this.$axios.get(SCHEDULES_API_URL, { params })
           .then(response => {
-            vm.schedules = response.data.map(elem => {
+            vm.schedules = response.data.content.map(elem => {
               elem.jsDate = DateTime.fromISO(elem.startDateTime).toJSDate();
               return elem;
             }).sort((a, b) => {
