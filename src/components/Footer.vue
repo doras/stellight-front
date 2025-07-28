@@ -37,6 +37,11 @@ const icons = ref([
       2023 — <strong>doras</strong>
       ( shoon0113@gmail.com )
     </div>
+    <p>
+      Emoji graphics are from "<a href="https://github.com/jdecked/twemoji" target="_blank" class="license">Twemoji</a>" originally by © Twitter, Inc. 
+      and maintained by the <a href="https://github.com/jdecked/twemoji" target="_blank" class="license">jdecked/twemoji</a> community.
+      Licensed under <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" style="text-decoration: underline;">CC-BY 4.0</a>.
+    </p>
   </v-footer>
 </template>
 
@@ -44,6 +49,11 @@ const icons = ref([
 a {
   color: inherit;
   text-decoration: inherit;
+}
+
+.license {
+  font-weight: bold;
+  text-decoration: underline;
 }
 
 div.info {
