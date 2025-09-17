@@ -319,7 +319,7 @@ export default {
           color,
         });
         // 3초 뒤 자동으로 alert 제거
-        setInterval(() => {
+        setTimeout(() => {
           this.alertList = this.alertList.filter(alert => alert.key !== key);
         }, 3000);
       },
