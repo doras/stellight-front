@@ -175,56 +175,73 @@ export default {
       };
     },
     created() {
-      const vm = this;
-      this.$axios.get(STELLARS_API_URL)
-        .then(response => {
-          const maxStellarId = response.data[response.data.length - 1].id;
-          const sortedData = response.data.sort((a, b) => a.generation - b.generation || a.debutOrder - b.debutOrder);
-
-          vm.stellars = sortedData;
-
-          // load filter info from local storage and set the filter to it
-          // if it is not stored yet, all stellar filter should be selected by default (except the case of empty array in local storage)
-          const stellarIds = localStorage.getItem(LS_KEY_SCHEDULE_FILTER_STELLAR_IDS);
-          if (stellarIds) {
-            try {
-              const parsedStellarIds = JSON.parse(stellarIds);
-              vm.stellarIds = sortedData.filter(s => parsedStellarIds.includes(s.id)).map(s => s.id);
-            } catch (e) {
-              console.error("Error parsing stellarIds from localStorage:", e);
-              vm.stellarIds = sortedData.map(s => s.id);
-            }
-
-            // load the last added stellar id from local storage
-            // if NaN, regard it as 12 which is the last added stellar id when this code is written
-            const lastAddedStellarId = parseInt(localStorage.getItem(LS_KEY_SCHEDULE_FILTER_LAST_ADDED_STELLAR_ID)) || 12;
-
-            // if there are any new stellars added after the last filter save, add them to the filter and save the updated filter
-            if (maxStellarId > lastAddedStellarId) {
-              const newStellarIds = [];
-              for (let i = lastAddedStellarId + 1; i <= maxStellarId; i++) {
-                newStellarIds.push(i);
-              }
-              vm.stellarIds = [...new Set([...vm.stellarIds, ...newStellarIds])];
-
-              // and save the updated filter to local storage
-              this.saveFilter();
-            }
-
-          } else {
-            vm.stellarIds = sortedData.map(s => s.id);
-          }
-        })
-        .catch(error => {
-          vm.noticeError(`스텔라 목록 조회 중 오류가 발생했습니다. ${error.response.data.message}`);
-          console.log(error);
-        });
+      this.fetchStellarsAndInitFilter();
     },
     mounted() {
       this.loadSchedules();
     },
     components: { Calendar, ScheduleItem, ScheduleDialog, FilterSaveButton },
     methods: {
+      async fetchStellarsAndInitFilter() {
+        try {
+          const response = await this.$axios.get(STELLARS_API_URL);
+          const sortedData = this.sortStellars(response.data);
+          this.stellars = sortedData;
+
+          this.initFilter();
+        }
+        catch (error) {
+          this.noticeError(`스텔라 목록 조회 중 오류가 발생했습니다. ${error.response?.data?.message}`);
+          console.log(error);
+        }
+      },
+      sortStellars(data) {
+        return [...data].sort((a, b) => a.generation - b.generation || a.debutOrder - b.debutOrder);
+      },
+      initFilter() {
+        // load filter info from local storage and set the filter to it
+        // if it is not stored yet, all stellar filter should be selected by default (except the case of empty array in local storage)
+        const storedIds = localStorage.getItem(LS_KEY_SCHEDULE_FILTER_STELLAR_IDS);
+        if (storedIds) {
+          this.stellarIds = this.getFilteredStellarIds(storedIds);
+
+          // if there are any new stellars added after the last filter save, add them to the filter and save the updated filter
+          const lastAddedStellarId = this.getLastAddedStellarId();
+          const maxStellarId = this.stellars.length > 0 ? Math.max(...this.stellars.map(s => s.id)) : 0;
+          if (maxStellarId > lastAddedStellarId) {
+            this.addNewStellarsToFilter(lastAddedStellarId, maxStellarId);
+            this.saveFilter(); // save the updated filter to local storage
+          }
+        } else {
+          this.stellarIds = this.stellars.map(s => s.id);
+        }
+      },
+      getFilteredStellarIds(storedIdJson) {
+        try {
+          const parsedStellarIds = JSON.parse(storedIdJson);
+          return this.stellars.map(s => s.id).filter(id => parsedStellarIds.includes(id));
+        }
+        catch (e) {
+          console.error("Error parsing stellarIds from localStorage:", e);
+          return this.stellars.map(s => s.id);
+        }
+      },
+      getLastAddedStellarId() {
+        // load the last added stellar id from local storage
+        const lastAddedIdStr = localStorage.getItem(LS_KEY_SCHEDULE_FILTER_LAST_ADDED_STELLAR_ID);
+        const lastAddedId = parseInt(lastAddedIdStr, 10);
+
+        // if NaN, regard it as 12 which is the last added stellar id when this code is written
+        return isNaN(lastAddedId) ? 12 : lastAddedId;
+      },
+      addNewStellarsToFilter(lastAddedId, maxId) {
+        const newStellarIds = [];
+        for (let i = lastAddedId + 1; i <= maxId; i++) {
+          newStellarIds.push(i);
+        }
+        this.stellarIds = [...new Set([...this.stellarIds, ...newStellarIds])];
+      },
+
       loadSchedules() {
         let firstDateTime = null;
         let lastDateTime = null;
