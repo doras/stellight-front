@@ -235,9 +235,12 @@ export default {
         return isNaN(lastAddedId) ? 12 : lastAddedId;
       },
       addNewStellarsToFilter(lastAddedId, maxId) {
+        const validStellarIds = new Set(this.stellars.map(s => s.id));
         const newStellarIds = [];
         for (let i = lastAddedId + 1; i <= maxId; i++) {
-          newStellarIds.push(i);
+          if (validStellarIds.has(i)) {
+            newStellarIds.push(i);
+          }
         }
         this.stellarIds = [...new Set([...this.stellarIds, ...newStellarIds])];
       },
