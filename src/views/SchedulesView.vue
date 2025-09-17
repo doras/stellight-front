@@ -129,7 +129,14 @@
 import { Calendar } from 'v-calendar';
 import { DateTime } from 'luxon';
 import ScheduleItem from '@/components/ScheduleItem.vue';
-import { STELLARS_API_URL, SCHEDULES_API_URL, LOGIN_INFO_KEY, LS_KEY_SCHEDULE_FILTER_STELLAR_IDS, LS_KEY_CALENDAR_VIEW_MODE } from '@/utils/consts';
+import { 
+  STELLARS_API_URL, 
+  SCHEDULES_API_URL, 
+  LOGIN_INFO_KEY, 
+  LS_KEY_SCHEDULE_FILTER_STELLAR_IDS, 
+  LS_KEY_SCHEDULE_FILTER_LAST_ADDED_STELLAR_ID,
+  LS_KEY_CALENDAR_VIEW_MODE
+} from '@/utils/consts';
 import ScheduleDialog from '@/components/ScheduleDialog.vue';
 import { formatDateTime } from '@/utils/common';
 import { useDisplay } from 'vuetify';
@@ -168,38 +175,77 @@ export default {
       };
     },
     created() {
-      const vm = this;
-      this.$axios.get(STELLARS_API_URL)
-        .then(response => {
-          const sortedData = response.data.sort((a, b) => a.generation - b.generation || a.debutOrder - b.debutOrder);
-
-          vm.stellars = sortedData;
-
-          // load filter info from local storage and set the filter to it
-          // if it is not stored yet, all stellar filter should be selected by default (except the case of empty array in local storage)
-          const stellarIds = localStorage.getItem(LS_KEY_SCHEDULE_FILTER_STELLAR_IDS);
-          if (stellarIds) {
-            try {
-              const parsedStellarIds = JSON.parse(stellarIds);
-              vm.stellarIds = sortedData.filter(s => parsedStellarIds.includes(s.id)).map(s => s.id);
-            } catch (e) {
-              console.error("Error parsing stellarIds from localStorage:", e);
-              vm.stellarIds = sortedData.map(s => s.id);
-            }
-          } else {
-            vm.stellarIds = sortedData.map(s => s.id);
-          }
-        })
-        .catch(error => {
-          vm.noticeError(`스텔라 목록 조회 중 오류가 발생했습니다. ${error.response.data.message}`);
-          console.log(error);
-        });
+      this.fetchStellarsAndInitFilter();
     },
     mounted() {
       this.loadSchedules();
     },
     components: { Calendar, ScheduleItem, ScheduleDialog, FilterSaveButton },
     methods: {
+      async fetchStellarsAndInitFilter() {
+        try {
+          const response = await this.$axios.get(STELLARS_API_URL);
+          const sortedData = this.sortStellars(response.data);
+          this.stellars = sortedData;
+
+          this.initFilter();
+        }
+        catch (error) {
+          this.noticeError(`스텔라 목록 조회 중 오류가 발생했습니다. ${error.response?.data?.message}`);
+          console.log(error);
+        }
+      },
+      sortStellars(data) {
+        return [...data].sort((a, b) => a.generation - b.generation || a.debutOrder - b.debutOrder);
+      },
+      initFilter() {
+        // load filter info from local storage and set the filter to it
+        // if it is not stored yet, all stellar filter should be selected by default (except the case of empty array in local storage)
+        const storedIds = localStorage.getItem(LS_KEY_SCHEDULE_FILTER_STELLAR_IDS);
+        if (storedIds) {
+          this.stellarIds = this.getFilteredStellarIds(storedIds);
+
+          // if there are any new stellars added after the last filter save, add them to the filter and save the updated filter
+          const lastAddedStellarId = this.getLastAddedStellarId();
+          const maxStellarId = this.stellars.length > 0 ? Math.max(...this.stellars.map(s => s.id)) : 0;
+          if (maxStellarId > lastAddedStellarId) {
+            this.addNewStellarsToFilter(lastAddedStellarId, maxStellarId);
+            this.saveFilter(); // save the updated filter to local storage
+          }
+        } else {
+          this.stellarIds = this.stellars.map(s => s.id);
+        }
+      },
+      getFilteredStellarIds(storedIdJson) {
+        try {
+          const parsedStellarIds = JSON.parse(storedIdJson);
+          const parsedSet = new Set(parsedStellarIds);
+          return this.stellars.map(s => s.id).filter(id => parsedSet.has(id));
+        }
+        catch (e) {
+          console.error("Error parsing stellarIds from localStorage:", e);
+          return this.stellars.map(s => s.id);
+        }
+      },
+      getLastAddedStellarId() {
+        // load the last added stellar id from local storage
+        const lastAddedIdStr = localStorage.getItem(LS_KEY_SCHEDULE_FILTER_LAST_ADDED_STELLAR_ID);
+        const lastAddedId = parseInt(lastAddedIdStr, 10);
+
+        // if NaN, regard it as 12 which is the last added stellar id when this code is written
+        return isNaN(lastAddedId) ? 12 : lastAddedId;
+      },
+      addNewStellarsToFilter(lastAddedId, maxId) {
+        const validStellarIds = new Set(this.stellars.map(s => s.id));
+        const newStellarIds = [];
+        for (let i = lastAddedId + 1; i <= maxId; i++) {
+          if (validStellarIds.has(i)) {
+            newStellarIds.push(i);
+          }
+        }
+        this.stellarIds = [...new Set([...this.stellarIds, ...newStellarIds])];
+      },
+
       loadSchedules() {
         let firstDateTime = null;
         let lastDateTime = null;
@@ -277,12 +323,16 @@ export default {
           color,
         });
         // 3초 뒤 자동으로 alert 제거
-        setInterval(() => {
+        setTimeout(() => {
           this.alertList = this.alertList.filter(alert => alert.key !== key);
         }, 3000);
       },
       saveFilter() {
+        // Save the selected stellar ids and the last added stellar id to localStorage
         localStorage.setItem(LS_KEY_SCHEDULE_FILTER_STELLAR_IDS, JSON.stringify(this.stellarIds));
+
+        const maxStellarId = this.stellars.length > 0 ? Math.max(...this.stellars.map(s => s.id)) : 0;
+        localStorage.setItem(LS_KEY_SCHEDULE_FILTER_LAST_ADDED_STELLAR_ID, maxStellarId.toString());
       },
     },
     computed: {
