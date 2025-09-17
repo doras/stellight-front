@@ -129,7 +129,14 @@
 import { Calendar } from 'v-calendar';
 import { DateTime } from 'luxon';
 import ScheduleItem from '@/components/ScheduleItem.vue';
-import { STELLARS_API_URL, SCHEDULES_API_URL, LOGIN_INFO_KEY, LS_KEY_SCHEDULE_FILTER_STELLAR_IDS, LS_KEY_CALENDAR_VIEW_MODE } from '@/utils/consts';
+import { 
+  STELLARS_API_URL, 
+  SCHEDULES_API_URL, 
+  LOGIN_INFO_KEY, 
+  LS_KEY_SCHEDULE_FILTER_STELLAR_IDS, 
+  LS_KEY_SCHEDULE_FILTER_LAST_ADDED_STELLAR_ID,
+  LS_KEY_CALENDAR_VIEW_MODE
+} from '@/utils/consts';
 import ScheduleDialog from '@/components/ScheduleDialog.vue';
 import { formatDateTime } from '@/utils/common';
 import { useDisplay } from 'vuetify';
@@ -171,6 +178,7 @@ export default {
       const vm = this;
       this.$axios.get(STELLARS_API_URL)
         .then(response => {
+          const maxStellarId = response.data[response.data.length - 1].id;
           const sortedData = response.data.sort((a, b) => a.generation - b.generation || a.debutOrder - b.debutOrder);
 
           vm.stellars = sortedData;
@@ -186,6 +194,23 @@ export default {
               console.error("Error parsing stellarIds from localStorage:", e);
               vm.stellarIds = sortedData.map(s => s.id);
             }
+
+            // load the last added stellar id from local storage
+            // if NaN, regard it as 12 which is the last added stellar id when this code is written
+            const lastAddedStellarId = parseInt(localStorage.getItem(LS_KEY_SCHEDULE_FILTER_LAST_ADDED_STELLAR_ID)) || 12;
+
+            // if there are any new stellars added after the last filter save, add them to the filter and save the updated filter
+            if (maxStellarId > lastAddedStellarId) {
+              const newStellarIds = [];
+              for (let i = lastAddedStellarId + 1; i <= maxStellarId; i++) {
+                newStellarIds.push(i);
+              }
+              vm.stellarIds = [...new Set([...vm.stellarIds, ...newStellarIds])];
+
+              // and save the updated filter to local storage
+              this.saveFilter();
+            }
+
           } else {
             vm.stellarIds = sortedData.map(s => s.id);
           }
@@ -282,7 +307,11 @@ export default {
         }, 3000);
       },
       saveFilter() {
+        // Save the selected stellar ids and the last added stellar id to localStorage
         localStorage.setItem(LS_KEY_SCHEDULE_FILTER_STELLAR_IDS, JSON.stringify(this.stellarIds));
+
+        const maxStellarId = this.stellars.length > 0 ? Math.max(...this.stellars.map(s => s.id)) : 0;
+        localStorage.setItem(LS_KEY_SCHEDULE_FILTER_LAST_ADDED_STELLAR_ID, maxStellarId.toString());
       },
     },
     computed: {
