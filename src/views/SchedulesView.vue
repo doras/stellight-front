@@ -219,7 +219,8 @@ export default {
       getFilteredStellarIds(storedIdJson) {
         try {
           const parsedStellarIds = JSON.parse(storedIdJson);
-          return this.stellars.map(s => s.id).filter(id => parsedStellarIds.includes(id));
+          const parsedSet = new Set(parsedStellarIds);
+          return this.stellars.map(s => s.id).filter(id => parsedSet.has(id));
         }
         catch (e) {
           console.error("Error parsing stellarIds from localStorage:", e);
