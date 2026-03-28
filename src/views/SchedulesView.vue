@@ -17,56 +17,20 @@
         :text="item.text"
       ></v-alert>
     </TransitionGroup>
-    <v-select
-      v-model="calendarView"
-      :items="calendarViewItems"
-      item-title="title"
-      item-value="value"
-      variant="outlined"
-    ></v-select>
     <v-row>
       <v-col
+        v-if="showSettings"
         cols="12"
         xl="2"
       >
-        <v-card
-          variant="outlined"
-        >
-          <v-card-item>
-            <v-card-title>필터</v-card-title>
-            <template v-slot:append>
-              <FilterSaveButton :clickFuncSuper="saveFilter" />
-            </template>
-          </v-card-item>
-          <v-card-text>
-            <v-form>
-              <v-checkbox 
-                label="전체" 
-                v-model="allStellarChecked"
-                density="compact"
-              ></v-checkbox>
-              <v-checkbox
-                v-for="(stellar, idx) in stellars"
-                :key="stellar.id"
-                v-model="stellarIds"
-                :value="stellar.id"
-                hide-details="auto"
-                density="compact"
-                :color="`#${stellar.personalColor}`"
-              >
-                <template v-slot:label>
-                  <span class="filter-label"
-                    :class="{ 'graduated': stellar.isGraduated }"
-                  >
-                    <span v-emoji class="emoji-span">{{ stellar?.emoji ?? '' }}</span>
-                    <span class="name-span">{{ stellar.nameKor }}</span>
-                    <span v-if="stellar.isGraduated">{{ stellar.generation > 0 ? "(졸업생)" : "(퇴사자)" }}</span>
-                  </span>
-                </template>
-              </v-checkbox>
-            </v-form>
-          </v-card-text>
-        </v-card>
+        <ScheduleSettingsPanel
+          v-model:calendarView="calendarView"
+          :calendarViewOptions="calendarViewOptions"
+          :stellars="stellars"
+          v-model:stellarIds="stellarIds"
+          v-model:allStellarChecked="allStellarChecked"
+          :saveFilter="saveFilter"
+        />
       </v-col>
       <v-col>
         <Calendar
@@ -141,6 +105,7 @@ import ScheduleDialog from '@/components/ScheduleDialog.vue';
 import { formatDateTime } from '@/utils/common';
 import { useDisplay } from 'vuetify';
 import FilterSaveButton from '@/components/FilterSaveButton.vue';
+import ScheduleSettingsPanel from '@/components/ScheduleSettingsPanel.vue';
 
 let alertKey = 0;
 
@@ -152,7 +117,7 @@ export default {
     },
     data() {
       const { mdAndDown } = useDisplay();
-      const calendarViewItems = [
+      const calendarViewOptions = [
         { title: "주간", value: "weekly" },
         { title: "월간", value: "monthly" },
       ];
@@ -169,9 +134,10 @@ export default {
         schedules: [],
         dialog: false,
         alertList: [],
-        calendarView: calendarViewItems.some(item => item.value === storedCalendarView) ? storedCalendarView : "weekly",
-        calendarViewItems,
+        calendarView: calendarViewOptions.some(item => item.value === storedCalendarView) ? storedCalendarView : "weekly",
+        calendarViewOptions,
         mdAndDown,
+        showSettings: true,
       };
     },
     created() {
@@ -180,7 +146,7 @@ export default {
     mounted() {
       this.loadSchedules();
     },
-    components: { Calendar, ScheduleItem, ScheduleDialog, FilterSaveButton },
+    components: { Calendar, ScheduleItem, ScheduleDialog, FilterSaveButton, ScheduleSettingsPanel },
     methods: {
       async fetchStellarsAndInitFilter() {
         try {
