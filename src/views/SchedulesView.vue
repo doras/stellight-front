@@ -104,7 +104,6 @@ import {
 import ScheduleDialog from '@/components/ScheduleDialog.vue';
 import { formatDateTime } from '@/utils/common';
 import { useDisplay } from 'vuetify';
-import FilterSaveButton from '@/components/FilterSaveButton.vue';
 import ScheduleSettingsPanel from '@/components/ScheduleSettingsPanel.vue';
 
 let alertKey = 0;
@@ -146,7 +145,7 @@ export default {
     mounted() {
       this.loadSchedules();
     },
-    components: { Calendar, ScheduleItem, ScheduleDialog, FilterSaveButton, ScheduleSettingsPanel },
+    components: { Calendar, ScheduleItem, ScheduleDialog, ScheduleSettingsPanel },
     methods: {
       async fetchStellarsAndInitFilter() {
         try {
