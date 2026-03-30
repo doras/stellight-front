@@ -79,13 +79,32 @@
       :stellars="stellars"
     ></ScheduleDialog>
   </v-dialog>
-  <div class="fab-div" v-if="loginInfo.isLoggedIn">
+  <div
+    class="schedules-view-fab"
+    :class="loginInfo.isLoggedIn ? 'schedules-view-fab--stacked-above' : 'schedules-view-fab--lower'"
+  >
+    <v-tooltip text="캘린더 설정" location="start">
+      <template v-slot:activator="{ props }">
+        <v-btn
+          v-bind="props"
+          :icon="showSettings ? 'mdi-close' : 'mdi-cog-outline'"
+          color="surface-variant"
+          size="large"
+          @click="toggleSettingsPanel"
+        />
+      </template>
+    </v-tooltip>
+  </div>
+  <div
+    class="schedules-view-fab schedules-view-fab--lower"
+    v-if="loginInfo.isLoggedIn"
+  >
     <v-btn
-        icon="mdi-plus"
-        color="primary"
-        size="large"
-        @click="openDialogCreation"
-      ></v-btn>
+      icon="mdi-plus"
+      color="primary"
+      size="large"
+      @click="openDialogCreation"
+    />
   </div>
 </template>
 
@@ -136,7 +155,7 @@ export default {
         calendarView: calendarViewOptions.some(item => item.value === storedCalendarView) ? storedCalendarView : "weekly",
         calendarViewOptions,
         mdAndDown,
-        showSettings: true,
+        showSettings: false,
       };
     },
     created() {
@@ -265,6 +284,9 @@ export default {
       openDialogCreation() {
         this.dialog = true;
       },
+      toggleSettingsPanel() {
+        this.showSettings = !this.showSettings;
+      },
       onSavedSchedule() {
         this.dialog = false;
         this.pushAlert("스케줄이 등록되었습니다.");
@@ -339,11 +361,18 @@ export default {
   min-height: 100px;
 }
 
-.fab-div {
+.schedules-view-fab {
   position: fixed;
-  bottom: 50px;
   right: 50px;
   z-index: 1;
+}
+
+.schedules-view-fab--stacked-above {
+  bottom: 130px;
+}
+
+.schedules-view-fab--lower {
+  bottom: 50px;
 }
 
 .today {
@@ -361,23 +390,6 @@ export default {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
-}
-
-.filter-label {
-  color: #000;
-}
-
-.filter-label.graduated {
-  color: #888;
-}
-
-.emoji-span {
-  margin: 0 1px;
-}
-
-.name-span {
-  vertical-align: middle;
-  margin-left: 3px;
 }
 
 </style>
