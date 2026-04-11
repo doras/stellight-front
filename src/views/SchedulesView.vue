@@ -164,7 +164,6 @@ export default {
     created() {
       this.fetchStellarsAndInitFilter();
     },
-    mounted() {},
     components: { Calendar, ScheduleItem, ScheduleDialog, ScheduleSettingsPanel },
     methods: {
       async fetchStellarsAndInitFilter() {
@@ -279,7 +278,7 @@ export default {
               // sort by stellar group rank
               const rankA = stellarRankMap.has(a.stellarId) ? stellarRankMap.get(a.stellarId) : Infinity;
               const rankB = stellarRankMap.has(b.stellarId) ? stellarRankMap.get(b.stellarId) : Infinity;
-              return rankA - rankB;
+              return rankA - rankB || 0;
             });
           })
           .catch(error => {
