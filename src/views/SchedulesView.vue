@@ -290,7 +290,9 @@ export default {
         this.showSettings = !this.showSettings;
         if (this.showSettings && !this.xlAndUp) {
           this.$nextTick(() => {
-            this.$refs.settingsCol.$el.scrollIntoView({ behavior: 'smooth' });
+            if (this.showSettings && this.$refs.settingsCol?.$el) {
+              this.$refs.settingsCol.$el.scrollIntoView({ behavior: 'smooth' });
+            }
           });
         }
       },
