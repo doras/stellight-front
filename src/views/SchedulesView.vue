@@ -22,6 +22,7 @@
         v-if="showSettings"
         cols="12"
         xl="2"
+        ref="settingsCol"
       >
         <ScheduleSettingsPanel
           v-model:calendarView="calendarView"
@@ -286,6 +287,11 @@ export default {
       },
       toggleSettingsPanel() {
         this.showSettings = !this.showSettings;
+        if (this.showSettings) {
+          this.$nextTick(() => {
+            this.$refs.settingsCol.$el.scrollIntoView({ behavior: 'smooth' });
+          });
+        }
       },
       onSavedSchedule() {
         this.dialog = false;
