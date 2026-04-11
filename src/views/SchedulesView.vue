@@ -84,7 +84,7 @@
     class="schedules-view-fab"
     :class="loginInfo.isLoggedIn ? 'schedules-view-fab--stacked-above' : 'schedules-view-fab--lower'"
   >
-    <v-tooltip text="캘린더 설정" location="start">
+    <v-tooltip text="캘린더 설정" location="start" :disabled="isTouchDevice">
       <template v-slot:activator="{ props }">
         <v-btn
           v-bind="props"
@@ -158,6 +158,7 @@ export default {
         mdAndDown,
         xlAndUp,
         showSettings: false,
+        isTouchDevice: window.matchMedia('(pointer: coarse)').matches,
       };
     },
     created() {
