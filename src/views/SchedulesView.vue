@@ -135,7 +135,7 @@ export default {
       }
     },
     data() {
-      const { mdAndDown } = useDisplay();
+      const { mdAndDown, xlAndUp } = useDisplay();
       const calendarViewOptions = [
         { title: "주간", value: "weekly" },
         { title: "월간", value: "monthly" },
@@ -156,6 +156,7 @@ export default {
         calendarView: calendarViewOptions.some(item => item.value === storedCalendarView) ? storedCalendarView : "weekly",
         calendarViewOptions,
         mdAndDown,
+        xlAndUp,
         showSettings: false,
       };
     },
@@ -287,7 +288,7 @@ export default {
       },
       toggleSettingsPanel() {
         this.showSettings = !this.showSettings;
-        if (this.showSettings) {
+        if (this.showSettings && !this.xlAndUp) {
           this.$nextTick(() => {
             this.$refs.settingsCol.$el.scrollIntoView({ behavior: 'smooth' });
           });
