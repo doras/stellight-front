@@ -84,7 +84,7 @@
     class="schedules-view-fab"
     :class="loginInfo.isLoggedIn ? 'schedules-view-fab--stacked-above' : 'schedules-view-fab--lower'"
   >
-    <v-tooltip text="캘린더 설정" location="start">
+    <v-tooltip text="캘린더 설정" location="start" :disabled="isTouchDevice">
       <template v-slot:activator="{ props }">
         <v-btn
           v-bind="props"
@@ -122,7 +122,7 @@ import {
   LS_KEY_CALENDAR_VIEW_MODE
 } from '@/utils/consts';
 import ScheduleDialog from '@/components/ScheduleDialog.vue';
-import { formatDateTime } from '@/utils/common';
+import { formatDateTime, isTouchDevice } from '@/utils/common';
 import { useDisplay } from 'vuetify';
 import ScheduleSettingsPanel from '@/components/ScheduleSettingsPanel.vue';
 
@@ -158,6 +158,7 @@ export default {
         mdAndDown,
         xlAndUp,
         showSettings: false,
+        isTouchDevice,
       };
     },
     created() {
