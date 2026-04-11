@@ -13,3 +13,5 @@ export function maxBytesRuleFactory(maxBytes, label = "해당 값") {
 }
 
 export const formatDateTime = dateTime => dateTime.toISO().substring(0, 19);
+
+export const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;

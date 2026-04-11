@@ -2,6 +2,7 @@
   <v-tooltip
     text="현재 필터 정보를 이 기기의 기본값으로 저장합니다."
     location="top"
+    :disabled="isTouchDevice"
   >
     <template v-slot:activator="{ props }">
       <v-btn
@@ -22,11 +23,14 @@
 </template>
 
 <script>
+import { isTouchDevice } from '@/utils/common';
+
 export default {
   props: ["clickFuncSuper"],
   data() {
     return {
       loading: false,
+      isTouchDevice,
     }
   },
   methods: {
