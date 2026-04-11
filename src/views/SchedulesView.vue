@@ -122,7 +122,7 @@ import {
   LS_KEY_CALENDAR_VIEW_MODE
 } from '@/utils/consts';
 import ScheduleDialog from '@/components/ScheduleDialog.vue';
-import { formatDateTime } from '@/utils/common';
+import { formatDateTime, isTouchDevice } from '@/utils/common';
 import { useDisplay } from 'vuetify';
 import ScheduleSettingsPanel from '@/components/ScheduleSettingsPanel.vue';
 
@@ -158,7 +158,7 @@ export default {
         mdAndDown,
         xlAndUp,
         showSettings: false,
-        isTouchDevice: window.matchMedia('(pointer: coarse)').matches,
+        isTouchDevice,
       };
     },
     created() {

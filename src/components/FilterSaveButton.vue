@@ -23,12 +23,14 @@
 </template>
 
 <script>
+import { isTouchDevice } from '@/utils/common';
+
 export default {
   props: ["clickFuncSuper"],
   data() {
     return {
       loading: false,
-      isTouchDevice: window.matchMedia('(pointer: coarse)').matches,
+      isTouchDevice,
     }
   },
   methods: {
