@@ -122,7 +122,7 @@ import {
   LS_KEY_CALENDAR_VIEW_MODE
 } from '@/utils/consts';
 import ScheduleDialog from '@/components/ScheduleDialog.vue';
-import { formatDateTime, isTouchDevice } from '@/utils/common';
+import { formatDateTime, isTouchDevice, getStellarGroupRank } from '@/utils/common';
 import { useDisplay } from 'vuetify';
 import ScheduleSettingsPanel from '@/components/ScheduleSettingsPanel.vue';
 
@@ -164,9 +164,6 @@ export default {
     created() {
       this.fetchStellarsAndInitFilter();
     },
-    mounted() {
-      this.loadSchedules();
-    },
     components: { Calendar, ScheduleItem, ScheduleDialog, ScheduleSettingsPanel },
     methods: {
       async fetchStellarsAndInitFilter() {
@@ -176,6 +173,7 @@ export default {
           this.stellars = sortedData;
 
           this.initFilter();
+          this.loadSchedules();
         }
         catch (error) {
           this.noticeError(`스텔라 목록 조회 중 오류가 발생했습니다. ${error.response?.data?.message}`);
@@ -183,7 +181,12 @@ export default {
         }
       },
       sortStellars(data) {
-        return [...data].sort((a, b) => a.generation - b.generation || a.debutOrder - b.debutOrder);
+        return [...data].sort((a, b) => {
+          const groupDiff = getStellarGroupRank(a) - getStellarGroupRank(b);
+          if (groupDiff !== 0) return groupDiff;
+          if (a.generation !== b.generation) return a.generation - b.generation;
+          return a.debutOrder - b.debutOrder;
+        });
       },
       initFilter() {
         // load filter info from local storage and set the filter to it
@@ -261,6 +264,7 @@ export default {
         const vm = this;
         this.$axios.get(SCHEDULES_API_URL, { params })
           .then(response => {
+            const stellarRankMap = new Map(vm.stellars.map((s, idx) => [s.id, idx]));
             vm.schedules = response.data.content.map(elem => {
               elem.jsDate = DateTime.fromISO(elem.startDateTime).toJSDate();
               return elem;
@@ -271,8 +275,10 @@ export default {
               // sort by date time
               if (a.jsDate.getTime() !== b.jsDate.getTime()) return a.jsDate.getTime() - b.jsDate.getTime();
 
-              // sort by stellar id
-              return a.stellarId - b.stellarId;
+              // sort by stellar group rank
+              const rankA = stellarRankMap.has(a.stellarId) ? stellarRankMap.get(a.stellarId) : Infinity;
+              const rankB = stellarRankMap.has(b.stellarId) ? stellarRankMap.get(b.stellarId) : Infinity;
+              return rankA - rankB || 0;
             });
           })
           .catch(error => {
