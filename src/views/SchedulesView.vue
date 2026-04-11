@@ -17,56 +17,21 @@
         :text="item.text"
       ></v-alert>
     </TransitionGroup>
-    <v-select
-      v-model="calendarView"
-      :items="calendarViewItems"
-      item-title="title"
-      item-value="value"
-      variant="outlined"
-    ></v-select>
     <v-row>
       <v-col
+        v-if="showSettings"
         cols="12"
         xl="2"
+        ref="settingsCol"
       >
-        <v-card
-          variant="outlined"
-        >
-          <v-card-item>
-            <v-card-title>필터</v-card-title>
-            <template v-slot:append>
-              <FilterSaveButton :clickFuncSuper="saveFilter" />
-            </template>
-          </v-card-item>
-          <v-card-text>
-            <v-form>
-              <v-checkbox 
-                label="전체" 
-                v-model="allStellarChecked"
-                density="compact"
-              ></v-checkbox>
-              <v-checkbox
-                v-for="(stellar, idx) in stellars"
-                :key="stellar.id"
-                v-model="stellarIds"
-                :value="stellar.id"
-                hide-details="auto"
-                density="compact"
-                :color="`#${stellar.personalColor}`"
-              >
-                <template v-slot:label>
-                  <span class="filter-label"
-                    :class="{ 'graduated': stellar.isGraduated }"
-                  >
-                    <span v-emoji class="emoji-span">{{ stellar?.emoji ?? '' }}</span>
-                    <span class="name-span">{{ stellar.nameKor }}</span>
-                    <span v-if="stellar.isGraduated">{{ stellar.generation > 0 ? "(졸업생)" : "(퇴사자)" }}</span>
-                  </span>
-                </template>
-              </v-checkbox>
-            </v-form>
-          </v-card-text>
-        </v-card>
+        <ScheduleSettingsPanel
+          v-model:calendarView="calendarView"
+          :calendarViewOptions="calendarViewOptions"
+          :stellars="stellars"
+          v-model:stellarIds="stellarIds"
+          v-model:allStellarChecked="allStellarChecked"
+          :saveFilter="saveFilter"
+        />
       </v-col>
       <v-col>
         <Calendar
@@ -115,13 +80,32 @@
       :stellars="stellars"
     ></ScheduleDialog>
   </v-dialog>
-  <div class="fab-div" v-if="loginInfo.isLoggedIn">
+  <div
+    class="schedules-view-fab"
+    :class="loginInfo.isLoggedIn ? 'schedules-view-fab--stacked-above' : 'schedules-view-fab--lower'"
+  >
+    <v-tooltip text="캘린더 설정" location="start">
+      <template v-slot:activator="{ props }">
+        <v-btn
+          v-bind="props"
+          :icon="showSettings ? 'mdi-close' : 'mdi-cog-outline'"
+          color="surface-variant"
+          size="large"
+          @click="toggleSettingsPanel"
+        />
+      </template>
+    </v-tooltip>
+  </div>
+  <div
+    class="schedules-view-fab schedules-view-fab--lower"
+    v-if="loginInfo.isLoggedIn"
+  >
     <v-btn
-        icon="mdi-plus"
-        color="primary"
-        size="large"
-        @click="openDialogCreation"
-      ></v-btn>
+      icon="mdi-plus"
+      color="primary"
+      size="large"
+      @click="openDialogCreation"
+    />
   </div>
 </template>
 
@@ -140,7 +124,7 @@ import {
 import ScheduleDialog from '@/components/ScheduleDialog.vue';
 import { formatDateTime } from '@/utils/common';
 import { useDisplay } from 'vuetify';
-import FilterSaveButton from '@/components/FilterSaveButton.vue';
+import ScheduleSettingsPanel from '@/components/ScheduleSettingsPanel.vue';
 
 let alertKey = 0;
 
@@ -151,8 +135,8 @@ export default {
       }
     },
     data() {
-      const { mdAndDown } = useDisplay();
-      const calendarViewItems = [
+      const { mdAndDown, xlAndUp } = useDisplay();
+      const calendarViewOptions = [
         { title: "주간", value: "weekly" },
         { title: "월간", value: "monthly" },
       ];
@@ -169,9 +153,11 @@ export default {
         schedules: [],
         dialog: false,
         alertList: [],
-        calendarView: calendarViewItems.some(item => item.value === storedCalendarView) ? storedCalendarView : "weekly",
-        calendarViewItems,
+        calendarView: calendarViewOptions.some(item => item.value === storedCalendarView) ? storedCalendarView : "weekly",
+        calendarViewOptions,
         mdAndDown,
+        xlAndUp,
+        showSettings: false,
       };
     },
     created() {
@@ -180,7 +166,7 @@ export default {
     mounted() {
       this.loadSchedules();
     },
-    components: { Calendar, ScheduleItem, ScheduleDialog, FilterSaveButton },
+    components: { Calendar, ScheduleItem, ScheduleDialog, ScheduleSettingsPanel },
     methods: {
       async fetchStellarsAndInitFilter() {
         try {
@@ -300,6 +286,16 @@ export default {
       openDialogCreation() {
         this.dialog = true;
       },
+      toggleSettingsPanel() {
+        this.showSettings = !this.showSettings;
+        if (this.showSettings && !this.xlAndUp) {
+          this.$nextTick(() => {
+            if (this.showSettings && this.$refs.settingsCol?.$el) {
+              this.$refs.settingsCol.$el.scrollIntoView({ behavior: 'smooth' });
+            }
+          });
+        }
+      },
       onSavedSchedule() {
         this.dialog = false;
         this.pushAlert("스케줄이 등록되었습니다.");
@@ -374,11 +370,18 @@ export default {
   min-height: 100px;
 }
 
-.fab-div {
+.schedules-view-fab {
   position: fixed;
-  bottom: 50px;
   right: 50px;
   z-index: 1;
+}
+
+.schedules-view-fab--stacked-above {
+  bottom: 130px;
+}
+
+.schedules-view-fab--lower {
+  bottom: 50px;
 }
 
 .today {
@@ -396,23 +399,6 @@ export default {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
-}
-
-.filter-label {
-  color: #000;
-}
-
-.filter-label.graduated {
-  color: #888;
-}
-
-.emoji-span {
-  margin: 0 1px;
-}
-
-.name-span {
-  vertical-align: middle;
-  margin-left: 3px;
 }
 
 </style>
