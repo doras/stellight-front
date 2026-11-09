@@ -14,7 +14,7 @@ const browserTargets = browserslist.loadConfig({
   path: fileURLToPath(new URL('.', import.meta.url)),
 })
 if (!browserTargets) {
-  throw new Error('.browserslistrc not found')
+  throw new Error('No browserslist config found (expected .browserslistrc)')
 }
 const esbuildTargets = browserslistToEsbuild(browserTargets)
 
