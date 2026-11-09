@@ -21,7 +21,6 @@ import {
   mdiGithub,
   mdiLogin,
   mdiLogout,
-  mdiPlus,
 } from '@mdi/js'
 
 // https://vuetifyjs.com/en/introduction/why-vuetify/#feature-guides
@@ -29,6 +28,7 @@ export default createVuetify({
   icons: {
     defaultSet: 'mdi',
     aliases: {
+      // Built-in aliases (close, plus, error, success, ...)
       ...aliases,
       checkCircle: mdiCheckCircle,
       cogOutline: mdiCogOutline,
@@ -37,7 +37,6 @@ export default createVuetify({
       github: mdiGithub,
       login: mdiLogin,
       logout: mdiLogout,
-      plus: mdiPlus,
     },
     sets: { mdi },
   },
