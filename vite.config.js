@@ -1,5 +1,6 @@
 // Plugins
 import vue from '@vitejs/plugin-vue'
+import legacy from '@vitejs/plugin-legacy'
 import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 
 // Utilities
@@ -18,6 +19,14 @@ export default defineConfig({
       styles: {
         configFile: 'src/styles/settings.scss',
       },
+    }),
+    // Inject only the core-js polyfills actually used by the code
+    // https://github.com/vitejs/vite/tree/main/packages/plugin-legacy
+    legacy({
+      renderLegacyChunks: false,
+      modernPolyfills: true,
+      // Same as Vite's default build target, so supported browsers stay unchanged
+      modernTargets: ['chrome>=87', 'edge>=88', 'firefox>=78', 'safari>=14'],
     }),
   ],
   define: { 'process.env': {} },
