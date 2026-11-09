@@ -6,7 +6,7 @@
   >
     <template v-slot:activator="{ props }">
       <v-btn
-        prepend-icon="mdi-content-save"
+        prepend-icon="$contentSave"
         variant="text"
         border 
         @click="buttonClicked"
@@ -15,7 +15,7 @@
       >
         필터 저장
         <template v-slot:loader>
-          <v-icon icon="mdi-check-circle"></v-icon>
+          <v-icon icon="$checkCircle"></v-icon>
         </template>
       </v-btn>
     </template>

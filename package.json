@@ -10,7 +10,7 @@
     "server": "node server.js"
   },
   "dependencies": {
-    "@mdi/font": "7.0.96",
+    "@mdi/js": "^7.4.47",
     "@popperjs/core": "^2.11.8",
     "@twemoji/api": "^15.1.0",
     "axios": "^1.20.0",
