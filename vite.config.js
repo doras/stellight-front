@@ -5,8 +5,18 @@ import vuetify, { transformAssetUrls } from 'vite-plugin-vuetify'
 
 // Utilities
 import browserslist from 'browserslist'
+import browserslistToEsbuild from 'browserslist-to-esbuild'
 import { defineConfig } from 'vite'
 import { fileURLToPath, URL } from 'node:url'
+
+// Supported browsers from .browserslistrc: the single source for JS syntax, CSS and polyfill targets
+const browserTargets = browserslist.loadConfig({
+  path: fileURLToPath(new URL('.', import.meta.url)),
+})
+if (!browserTargets) {
+  throw new Error('.browserslistrc not found')
+}
+const esbuildTargets = browserslistToEsbuild(browserTargets)
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -27,10 +37,15 @@ export default defineConfig({
     legacy({
       renderLegacyChunks: false,
       modernPolyfills: true,
-      // Also sets build.target, so syntax and polyfills share the same browser list
-      modernTargets: browserslist.loadConfig({ path: '.' }),
+      // Only selects polyfills; build.target is set below (the plugin sets it only with legacy chunks)
+      modernTargets: browserTargets,
     }),
   ],
+  build: {
+    target: esbuildTargets,
+    // Set explicitly, otherwise plugin-legacy forces 'chrome61'
+    cssTarget: esbuildTargets,
+  },
   define: { 'process.env': {} },
   resolve: {
     alias: {

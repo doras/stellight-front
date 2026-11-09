@@ -1,6 +1,6 @@
 # Supported browsers (single source of truth).
-# Read by vite.config.js for the build target and polyfill detection (@vitejs/plugin-legacy modernTargets).
-# Matches Vite's default build target; mobile engines must be listed separately (safari != ios_saf).
+# Read by vite.config.js for build.target, build.cssTarget and polyfill detection (@vitejs/plugin-legacy modernTargets).
+# Mobile engines must be listed separately (safari does not include iOS Safari).
 chrome >= 87
 edge >= 88
 firefox >= 78
