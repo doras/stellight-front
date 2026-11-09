@@ -14,7 +14,9 @@ import { createVuetify } from 'vuetify'
 // https://vuetifyjs.com/en/features/icon-fonts/#mdi-js-svg
 import { aliases, mdi } from 'vuetify/iconsets/mdi-svg'
 import {
+  mdiAlertCircle,
   mdiCheckCircle,
+  mdiCloseCircle,
   mdiCogOutline,
   mdiContentSave,
   mdiEmailOutline,
@@ -28,8 +30,11 @@ export default createVuetify({
   icons: {
     defaultSet: 'mdi',
     aliases: {
-      // Built-in aliases (close, plus, error, success, ...)
+      // Built-in aliases (close, plus, success, ...)
       ...aliases,
+      // Keep the glyphs of the previous icon font set (mdi-svg uses different ones)
+      error: mdiCloseCircle,
+      warning: mdiAlertCircle,
       checkCircle: mdiCheckCircle,
       cogOutline: mdiCogOutline,
       contentSave: mdiContentSave,
