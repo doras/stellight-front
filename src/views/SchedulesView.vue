@@ -88,7 +88,7 @@
       <template v-slot:activator="{ props }">
         <v-btn
           v-bind="props"
-          :icon="showSettings ? 'mdi-close' : 'mdi-cog-outline'"
+          :icon="showSettings ? '$close' : '$cogOutline'"
           color="surface-variant"
           size="large"
           @click="toggleSettingsPanel"
@@ -101,7 +101,7 @@
     v-if="loginInfo.isLoggedIn"
   >
     <v-btn
-      icon="mdi-plus"
+      icon="$plus"
       color="primary"
       size="large"
       @click="openDialogCreation"

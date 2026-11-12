@@ -3,11 +3,11 @@ import { ref } from 'vue'
 
 const icons = ref([
   {
-    icon: "mdi-github",
+    icon: "$github",
     link: "https://github.com/doras",
   },
   {
-    icon: "mdi-email-outline",
+    icon: "$emailOutline",
     link: "mailto:shoon0113@gmail.com",
   },
 ]);

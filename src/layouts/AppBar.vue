@@ -24,7 +24,7 @@
               v-if="!loginInfo.isLoggedIn"
             >
               <v-btn
-                prepend-icon="mdi-login"
+                prepend-icon="$login"
                 :class="[xs ? 'text-body-2' : '']"
               >
                   Login
@@ -35,7 +35,7 @@
               v-else
             >
               <v-btn
-                prepend-icon="mdi-logout"
+                prepend-icon="$logout"
                 :class="[xs ? 'text-body-2' : '']"
               >
                   Logout
