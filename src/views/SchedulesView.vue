@@ -1,5 +1,8 @@
 <template>
-  <v-container style="padding-top: 128px; padding-bottom: 64px;">
+  <v-container
+    class="schedules-view-container"
+    :class="{ 'schedules-view-container--daily': isDailyView }"
+  >
     <v-alert
       style="margin-bottom: 32px;"
       color="error"
@@ -17,6 +20,15 @@
         :text="item.text"
       ></v-alert>
     </TransitionGroup>
+    <v-alert
+      v-if="showDefaultViewNotice"
+      style="margin-bottom: 32px;"
+      color="info"
+      icon="$info"
+      closable
+      text="기본 보기가 새로 추가되었습니다. 주간/월간 캘린더는 오른쪽 아래 톱니바퀴 버튼(보기 설정)에서 선택할 수 있습니다."
+      @click:close="dismissDefaultViewNotice"
+    ></v-alert>
     <v-row>
       <v-col
         v-if="showSettings"
@@ -34,7 +46,18 @@
         />
       </v-col>
       <v-col>
+        <DailyScheduleView
+          v-if="isDailyView"
+          :stellars="stellars"
+          :schedules="filteredSchedules"
+          :startDate="dayRange.start"
+          :endDate="dayRange.end"
+          :dataVersion="dataVersion"
+          @select="openScheduleDialog"
+          @update:range="onDayRangeUpdated"
+        />
         <Calendar
+          v-else
           :masks="masks"
           :attributes="attributes"
           expanded
@@ -80,11 +103,33 @@
       :stellars="stellars"
     ></ScheduleDialog>
   </v-dialog>
+  <!-- Single dialog for the daily view, shared by the cards and the day-off chips -->
+  <v-dialog
+    v-model="scheduleDialog"
+    width="600px"
+  >
+    <!-- The dialogs read the schedule only when created, so re-create them each time the dialog opens -->
+    <ScheduleDialog
+      v-if="selectedSchedule && loginInfo.isLoggedIn"
+      :key="`edit-${scheduleDialogSeq}`"
+      @close="scheduleDialog = false"
+      @modified="onModifiedSchedule"
+      @removed="onRemovedSchedule"
+      :stellars="stellars"
+      :schedule="selectedSchedule"
+    ></ScheduleDialog>
+    <ScheduleDetailDialog
+      v-else-if="selectedSchedule"
+      :key="`detail-${scheduleDialogSeq}`"
+      @close="scheduleDialog = false"
+      :schedule="selectedSchedule"
+    ></ScheduleDetailDialog>
+  </v-dialog>
   <div
     class="schedules-view-fab"
     :class="loginInfo.isLoggedIn ? 'schedules-view-fab--stacked-above' : 'schedules-view-fab--lower'"
   >
-    <v-tooltip text="캘린더 설정" location="start" :disabled="isTouchDevice">
+    <v-tooltip text="보기 설정" location="start" :disabled="isTouchDevice">
       <template v-slot:activator="{ props }">
         <v-btn
           v-bind="props"
@@ -119,14 +164,38 @@ import {
   LOGIN_INFO_KEY, 
   LS_KEY_SCHEDULE_FILTER_STELLAR_IDS, 
   LS_KEY_SCHEDULE_FILTER_LAST_ADDED_STELLAR_ID,
-  LS_KEY_CALENDAR_VIEW_MODE
+  LS_KEY_CALENDAR_VIEW_MODE,
+  LS_KEY_DEFAULT_VIEW_NOTICE,
+  VIEW_MODE_DEFAULT,
+  VIEW_MODE_WEEKLY,
+  VIEW_MODE_MONTHLY,
 } from '@/utils/consts';
 import ScheduleDialog from '@/components/ScheduleDialog.vue';
+import ScheduleDetailDialog from '@/components/ScheduleDetailDialog.vue';
+import DailyScheduleView from '@/components/DailyScheduleView.vue';
 import { formatDateTime, isTouchDevice, getStellarGroupRank } from '@/utils/common';
 import { useDisplay } from 'vuetify';
 import ScheduleSettingsPanel from '@/components/ScheduleSettingsPanel.vue';
 
 let alertKey = 0;
+
+function readLocalStorage(key) {
+  try {
+    return localStorage.getItem(key);
+  }
+  catch (e) {
+    return null;
+  }
+}
+
+// Yesterday, today, and tomorrow
+function getInitialDayRange() {
+  const today = DateTime.now().startOf('day');
+  return {
+    start: today.minus({ days: 1 }).toISODate(),
+    end: today.plus({ days: 1 }).toISODate(),
+  };
+}
 
 export default {
     inject: {
@@ -137,10 +206,11 @@ export default {
     data() {
       const { mdAndDown, xlAndUp } = useDisplay();
       const calendarViewOptions = [
-        { title: "주간", value: "weekly" },
-        { title: "월간", value: "monthly" },
+        { title: "기본", value: VIEW_MODE_DEFAULT },
+        { title: "주간", value: VIEW_MODE_WEEKLY },
+        { title: "월간", value: VIEW_MODE_MONTHLY },
       ];
-      const storedCalendarView = localStorage.getItem(LS_KEY_CALENDAR_VIEW_MODE);
+      const storedCalendarView = readLocalStorage(LS_KEY_CALENDAR_VIEW_MODE);
       return {
         masks: {
           title: "YYYY년 MMM",
@@ -152,8 +222,14 @@ export default {
         errorMsg: "",
         schedules: [],
         dialog: false,
+        scheduleDialog: false,
+        selectedSchedule: null,
+        scheduleDialogSeq: 0,
+        dayRange: getInitialDayRange(),
+        dataVersion: 0,
+        showDefaultViewNotice: !!readLocalStorage(LS_KEY_DEFAULT_VIEW_NOTICE),
         alertList: [],
-        calendarView: calendarViewOptions.some(item => item.value === storedCalendarView) ? storedCalendarView : "weekly",
+        calendarView: calendarViewOptions.some(item => item.value === storedCalendarView) ? storedCalendarView : VIEW_MODE_DEFAULT,
         calendarViewOptions,
         mdAndDown,
         xlAndUp,
@@ -162,9 +238,11 @@ export default {
       };
     },
     created() {
+      // Sequence of the schedule requests, to ignore responses of older ones (not reactive: not used in rendering)
+      this.scheduleRequestSeq = 0;
       this.fetchStellarsAndInitFilter();
     },
-    components: { Calendar, ScheduleItem, ScheduleDialog, ScheduleSettingsPanel },
+    components: { Calendar, ScheduleItem, ScheduleDialog, ScheduleDetailDialog, ScheduleSettingsPanel, DailyScheduleView },
     methods: {
       async fetchStellarsAndInitFilter() {
         try {
@@ -236,24 +314,39 @@ export default {
         this.stellarIds = [...new Set([...this.stellarIds, ...newStellarIds])];
       },
 
-      loadSchedules() {
-        let firstDateTime = null;
-        let lastDateTime = null;
+      // Range of the schedules to load for the current view, or null if it is not ready yet
+      getScheduleRange() {
+        if (this.calendarView === VIEW_MODE_DEFAULT) {
+          return {
+            firstDateTime: DateTime.fromISO(this.dayRange.start),
+            lastDateTime: DateTime.fromISO(this.dayRange.end).endOf("day"),
+          };
+        }
+        return this.getCalendarRange();
+      },
+      getCalendarRange() {
+        const page = this.$refs.calendar?.firstPage;
+        if (!page) return null;
 
         // if calendar is weekly
-        if (this.calendarView === "weekly") {
-          const viewDays = this.$refs.calendar.firstPage.viewDays;
-
-          firstDateTime = DateTime.fromJSDate(viewDays[0].date);
-          lastDateTime = DateTime.fromJSDate(viewDays[viewDays.length - 1].date).endOf("day");
-        // if calendar is monthly
-        } else {
-          const { year, month } = this.$refs.calendar.firstPage;
-
-          firstDateTime = DateTime.local(year, month);
-          lastDateTime = firstDateTime.endOf("month");
+        if (this.calendarView === VIEW_MODE_WEEKLY) {
+          const viewDays = page.viewDays;
+          return {
+            firstDateTime: DateTime.fromJSDate(viewDays[0].date),
+            lastDateTime: DateTime.fromJSDate(viewDays[viewDays.length - 1].date).endOf("day"),
+          };
         }
-
+        // if calendar is monthly
+        const firstDateTime = DateTime.local(page.year, page.month);
+        return {
+          firstDateTime,
+          lastDateTime: firstDateTime.endOf("month"),
+        };
+      },
+      loadSchedules() {
+        const range = this.getScheduleRange();
+        if (!range) return;
+        const { firstDateTime, lastDateTime } = range;
 
         const params = {
           startDateTimeAfter: formatDateTime(firstDateTime),
@@ -262,8 +355,11 @@ export default {
         };
 
         const vm = this;
+        // Ignore responses of older requests (e.g. the range or the view changed in the meantime)
+        const requestSeq = ++this.scheduleRequestSeq;
         this.$axios.get(SCHEDULES_API_URL, { params })
           .then(response => {
+            if (requestSeq !== vm.scheduleRequestSeq) return;
             const stellarRankMap = new Map(vm.stellars.map((s, idx) => [s.id, idx]));
             vm.schedules = response.data.content.map(elem => {
               elem.jsDate = DateTime.fromISO(elem.startDateTime).toJSDate();
@@ -280,9 +376,11 @@ export default {
               const rankB = stellarRankMap.has(b.stellarId) ? stellarRankMap.get(b.stellarId) : Infinity;
               return rankA - rankB || 0;
             });
+            vm.dataVersion++;
           })
           .catch(error => {
-            vm.noticeError(`스케줄 목록 조회 중 오류가 발생했습니다. ${error.response.data.message}`);
+            if (requestSeq !== vm.scheduleRequestSeq) return;
+            vm.noticeError(`스케줄 목록 조회 중 오류가 발생했습니다. ${error.response?.data?.message}`);
             console.log(error);
           });
       },
@@ -292,6 +390,25 @@ export default {
       },
       openDialogCreation() {
         this.dialog = true;
+      },
+      openScheduleDialog(schedule) {
+        this.selectedSchedule = schedule;
+        this.scheduleDialogSeq++;
+        this.scheduleDialog = true;
+      },
+      onDayRangeUpdated(range) {
+        // Re-fetch the whole range (the data is small)
+        this.dayRange = range;
+        this.loadSchedules();
+      },
+      dismissDefaultViewNotice() {
+        this.showDefaultViewNotice = false;
+        try {
+          localStorage.removeItem(LS_KEY_DEFAULT_VIEW_NOTICE);
+        }
+        catch (e) {
+          console.error("Error removing the notice flag from localStorage:", e);
+        }
       },
       toggleSettingsPanel() {
         this.showSettings = !this.showSettings;
@@ -310,11 +427,13 @@ export default {
       },
       onModifiedSchedule() {
         this.dialog = false;
+        this.scheduleDialog = false;
         this.pushAlert("스케줄이 수정되었습니다.");
         this.loadSchedules();
       },
       onRemovedSchedule() {
         this.dialog = false;
+        this.scheduleDialog = false;
         this.pushAlert("스케줄이 삭제되었습니다.");
         this.loadSchedules();
       },
@@ -351,8 +470,15 @@ export default {
           }
         }
       },
+      isDailyView() {
+        return this.calendarView === VIEW_MODE_DEFAULT;
+      },
+      filteredSchedules() {
+        const stellarIdSet = new Set(this.stellarIds);
+        return this.schedules.filter(elem => stellarIdSet.has(elem.stellarId));
+      },
       attributes() {
-        return this.schedules.filter(elem => this.stellarIds.includes(elem.stellarId)).map((elem, idx) => ({
+        return this.filteredSchedules.map((elem, idx) => ({
           key: elem.id,
           customData: {
             schedule: elem,
@@ -366,13 +492,29 @@ export default {
       calendarView(newValue) {
         // Save the most recently set calendar view mode to localStorage
         localStorage.setItem(LS_KEY_CALENDAR_VIEW_MODE, newValue);
-        this.loadSchedules();
+        if (newValue === VIEW_MODE_DEFAULT) {
+          // Start again from yesterday-tomorrow (auto-scrolls once loaded)
+          this.dayRange = getInitialDayRange();
+        }
+        // Wait for the calendar to be mounted when switching from the daily view
+        this.$nextTick(() => this.loadSchedules());
       }
     }
 };
 </script>
 
 <style scoped>
+.schedules-view-container {
+  padding-top: 128px;
+  padding-bottom: 64px;
+}
+
+/* Keep the last cards above the floating buttons */
+.schedules-view-container--daily {
+  padding-top: 96px;
+  padding-bottom: 200px;
+}
+
 .day-div {
   min-height: 100px;
 }

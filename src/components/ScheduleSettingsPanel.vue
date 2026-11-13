@@ -6,7 +6,7 @@
     <v-card-text>
       <v-select
         class="mb-2"
-        label="캘린더 모드"
+        label="보기 모드"
         :items="calendarViewOptions"
         item-title="title"
         item-value="value"
