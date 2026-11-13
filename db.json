@@ -68,7 +68,7 @@
       "nameKor": "텐코 시부키",
       "generation": 3,
       "debutOrder": 1,
-      "personalColor": "794EB7",
+      "personalColor": "9B89BD",
       "emoji": "⛩️",
       "isGraduated": false
     },
@@ -86,7 +86,7 @@
       "nameKor": "하나코 나나",
       "generation": 3,
       "debutOrder": 3,
-      "personalColor": "FFAABA",
+      "personalColor": "FF8CA1",
       "emoji": "🔫",
       "isGraduated": false
     },
@@ -107,6 +107,51 @@
       "personalColor": "222222",
       "emoji": "🐦‍⬛",
       "isGraduated": true
+    },
+    {
+      "id": 13,
+      "nameKor": "사키하네 후야",
+      "generation": 1,
+      "debutOrder": 3,
+      "personalColor": "5C437C",
+      "emoji": "💜",
+      "isGraduated": false
+    },
+    {
+      "id": 14,
+      "nameKor": "시즈키 토아",
+      "generation": 4,
+      "debutOrder": 1,
+      "personalColor": "BC43A4",
+      "emoji": "🪦",
+      "isGraduated": false
+    },
+    {
+      "id": 15,
+      "nameKor": "코가네 랑",
+      "generation": 4,
+      "debutOrder": 2,
+      "personalColor": "C19731",
+      "emoji": "🐯",
+      "isGraduated": false
+    },
+    {
+      "id": 16,
+      "nameKor": "하나요 히요리",
+      "generation": 4,
+      "debutOrder": 3,
+      "personalColor": "F89BBD",
+      "emoji": "🌸",
+      "isGraduated": false
+    },
+    {
+      "id": 17,
+      "nameKor": "토키노 메리",
+      "generation": 4,
+      "debutOrder": 4,
+      "personalColor": "D9BE69",
+      "emoji": "🪡",
+      "isGraduated": false
     }
   ],
   "schedules": [
