@@ -473,6 +473,15 @@ export default {
   margin-bottom: 24px;
 }
 
+/*
+ * Leave enough room below the last day so that its header can reach the top when ◀ / ▶ scroll to it.
+ * Otherwise the toolbar date falls back to the previous day and ▶ goes to the same day again.
+ * 260px: the "next day" button and the bottom padding of the page that follow it.
+ */
+.day-section:last-of-type {
+  min-height: calc(100vh - var(--app-bar-height) - var(--toolbar-height) - 260px);
+}
+
 .day-header {
   position: sticky;
   top: calc(var(--app-bar-height) + var(--toolbar-height));
