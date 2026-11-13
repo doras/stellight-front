@@ -330,18 +330,20 @@ export default {
     captureScrollAnchor() {
       const stickyTop = this.getStickyTop();
       const elements = this.$refs.root?.querySelectorAll('[data-anchor]') ?? [];
-      // The last anchor element that starts above the visible area is the one being looked at;
-      // fall back to the first element below it
+      // Use the first element that starts in the visible area: its position does not depend on
+      // the content above it, which may grow (e.g. a prepended day being filled with schedules).
+      // Fall back to the last element covering the top of the visible area.
       let anchor = null;
+      let covering = null;
       for (const element of elements) {
         const rect = element.getBoundingClientRect();
-        if (rect.top <= stickyTop) {
-          if (rect.bottom > stickyTop) anchor = element;
-        } else {
-          if (!anchor) anchor = element;
+        if (rect.top >= stickyTop) {
+          anchor = element;
           break;
         }
+        if (rect.bottom > stickyTop) covering = element;
       }
+      anchor = anchor ?? covering;
       if (!anchor) return null;
       return { key: anchor.dataset.anchor, top: anchor.getBoundingClientRect().top };
     },
