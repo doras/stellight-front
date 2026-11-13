@@ -1,7 +1,7 @@
 <template>
   <v-app-bar 
     flat 
-    style="border-bottom: 1px solid rgb(0, 0, 0, 0.12); background-color: rgba(255,255,255,.7);"
+    style="border-bottom: 1px solid rgb(0, 0, 0, 0.12); background-color: #fff;"
   >
     <v-container class="d-flex">
           <router-link 

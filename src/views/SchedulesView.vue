@@ -522,7 +522,8 @@ export default {
 .schedules-view-fab {
   position: fixed;
   right: 50px;
-  z-index: 1;
+  /* Above the sticky toolbar and date headers of the daily view */
+  z-index: 5;
 }
 
 .schedules-view-fab--stacked-above {
