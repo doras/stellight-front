@@ -381,7 +381,7 @@ export default {
     },
     formatBlockRange(blockIndex) {
       const pad = hour => String(hour).padStart(2, '0');
-      return `${pad(blockIndex * BLOCK_HOURS)}–${pad((blockIndex + 1) * BLOCK_HOURS)}`;
+      return `${pad(blockIndex * BLOCK_HOURS)}시 ~ ${pad((blockIndex + 1) * BLOCK_HOURS)}시`;
     },
     scrollToElement(element, behavior) {
       element?.scrollIntoView({ block: 'start', behavior });
