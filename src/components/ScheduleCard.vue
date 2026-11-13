@@ -67,6 +67,7 @@ export default {
 }
 
 .title-div {
+  word-break: keep-all;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
 }
@@ -75,6 +76,7 @@ export default {
   margin-top: 4px;
   font-size: 0.875rem;
   opacity: 0.7;
+  word-break: keep-all;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
 }

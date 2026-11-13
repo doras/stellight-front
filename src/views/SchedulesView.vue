@@ -10,25 +10,20 @@
       :text="errorMsg"
       v-if="isError"
     ></v-alert>
-    <TransitionGroup name="fade">
-      <v-alert
-        v-for="item in alertList"
-        :key="item.key"
-        style="margin-bottom: 32px;"
-        :color="item.color"
-        :icon="`\$${item.color}`"
-        :text="item.text"
-      ></v-alert>
-    </TransitionGroup>
-    <v-alert
-      v-if="showDefaultViewNotice"
-      style="margin-bottom: 32px;"
-      color="info"
-      icon="$info"
-      closable
-      text="기본 보기가 새로 추가되었습니다. 주간/월간 캘린더는 오른쪽 아래 톱니바퀴 버튼(보기 설정)에서 선택할 수 있습니다."
-      @click:close="dismissDefaultViewNotice"
-    ></v-alert>
+    <!-- Floating, so that the alerts are visible wherever the page is scrolled -->
+    <div class="floating-alerts">
+      <TransitionGroup name="fade">
+        <v-alert
+          v-for="item in alertList"
+          :key="item.key"
+          class="mb-2"
+          elevation="4"
+          :color="item.color"
+          :icon="`\$${item.color}`"
+          :text="item.text"
+        ></v-alert>
+      </TransitionGroup>
+    </div>
     <v-row>
       <v-col
         v-if="showSettings"
@@ -102,6 +97,26 @@
       @saved="onSavedSchedule"
       :stellars="stellars"
     ></ScheduleDialog>
+  </v-dialog>
+  <!-- One-time notice for existing users switched to the default view by the settings migration -->
+  <v-dialog
+    :model-value="showDefaultViewNotice"
+    @update:model-value="value => !value && dismissDefaultViewNotice()"
+    max-width="440px"
+    scroll-strategy="none"
+  >
+    <!-- scroll-strategy="none": the auto-scroll of the daily view behind it must not be blocked -->
+    <v-card class="keep-all">
+      <v-card-title class="pt-5 px-6">새로운 기본 보기</v-card-title>
+      <v-card-text class="px-6">
+        <p class="mb-3">스케줄을 날짜별 카드로 한눈에 볼 수 있는 기본 보기가 추가되었습니다.</p>
+        <p>기존 주간/월간 캘린더는 오른쪽 아래 톱니바퀴 버튼(보기 설정)에서 선택할 수 있습니다.</p>
+      </v-card-text>
+      <v-card-actions class="px-6 pb-4">
+        <v-spacer></v-spacer>
+        <v-btn color="primary" variant="flat" @click="dismissDefaultViewNotice">확인</v-btn>
+      </v-card-actions>
+    </v-card>
   </v-dialog>
   <!-- Single dialog for the daily view, shared by the cards and the day-off chips -->
   <v-dialog
@@ -517,6 +532,21 @@ export default {
 
 .day-div {
   min-height: 100px;
+}
+
+.keep-all {
+  word-break: keep-all;
+}
+
+/* Below the app bar and the toolbar of the daily view */
+.floating-alerts {
+  position: fixed;
+  top: 128px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(600px, calc(100% - 32px));
+  z-index: 6;
+  pointer-events: none;
 }
 
 .schedules-view-fab {
