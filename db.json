@@ -3,6 +3,7 @@
     {
       "id": 1,
       "nameKor": "아이리 칸나",
+      "nameKorShort": "칸나",
       "generation": 1,
       "debutOrder": 1,
       "personalColor": "373584",
@@ -12,6 +13,7 @@
     {
       "id": 2,
       "nameKor": "아야츠노 유니",
+      "nameKorShort": "유니",
       "generation": 1,
       "debutOrder": 2,
       "personalColor": "b77de4",
@@ -21,6 +23,7 @@
     {
       "id": 3,
       "nameKor": "시라유키 히나",
+      "nameKorShort": "히나",
       "generation": 2,
       "debutOrder": 1,
       "personalColor": "dfb387",
@@ -30,6 +33,7 @@
     {
       "id": 4,
       "nameKor": "네네코 마시로",
+      "nameKorShort": "시로",
       "generation": 2,
       "debutOrder": 2,
       "personalColor": "757875",
@@ -39,6 +43,7 @@
     {
       "id": 5,
       "nameKor": "아카네 리제",
+      "nameKorShort": "리제",
       "generation": 2,
       "debutOrder": 3,
       "personalColor": "d34344",
@@ -48,6 +53,7 @@
     {
       "id": 6,
       "nameKor": "아라하시 타비",
+      "nameKorShort": "타비",
       "generation": 2,
       "debutOrder": 4,
       "personalColor": "50d3f0",
@@ -57,6 +63,7 @@
     {
       "id": 7,
       "nameKor": "강지",
+      "nameKorShort": null,
       "generation": 0,
       "debutOrder": 1,
       "personalColor": "8182b8",
@@ -66,6 +73,7 @@
     {
       "id": 8,
       "nameKor": "텐코 시부키",
+      "nameKorShort": "부키",
       "generation": 3,
       "debutOrder": 1,
       "personalColor": "9B89BD",
@@ -75,6 +83,7 @@
     {
       "id": 9,
       "nameKor": "아오쿠모 린",
+      "nameKorShort": "린",
       "generation": 3,
       "debutOrder": 2,
       "personalColor": "7299F4",
@@ -84,6 +93,7 @@
     {
       "id": 10,
       "nameKor": "하나코 나나",
+      "nameKorShort": "나나",
       "generation": 3,
       "debutOrder": 3,
       "personalColor": "FF8CA1",
@@ -93,6 +103,7 @@
     {
       "id": 11,
       "nameKor": "유즈하 리코",
+      "nameKorShort": "리코",
       "generation": 3,
       "debutOrder": 4,
       "personalColor": "6DD65C",
@@ -102,6 +113,7 @@
     {
       "id": 12,
       "nameKor": "이브",
+      "nameKorShort": "이브",
       "generation": 0,
       "debutOrder": 2,
       "personalColor": "222222",
@@ -111,6 +123,7 @@
     {
       "id": 13,
       "nameKor": "사키하네 후야",
+      "nameKorShort": "후야",
       "generation": 1,
       "debutOrder": 3,
       "personalColor": "5C437C",
@@ -120,6 +133,7 @@
     {
       "id": 14,
       "nameKor": "시즈키 토아",
+      "nameKorShort": "토아",
       "generation": 4,
       "debutOrder": 1,
       "personalColor": "BC43A4",
@@ -129,6 +143,7 @@
     {
       "id": 15,
       "nameKor": "코가네 랑",
+      "nameKorShort": "랑",
       "generation": 4,
       "debutOrder": 2,
       "personalColor": "C19731",
@@ -138,6 +153,7 @@
     {
       "id": 16,
       "nameKor": "하나요 히요리",
+      "nameKorShort": "히요리",
       "generation": 4,
       "debutOrder": 3,
       "personalColor": "F89BBD",
@@ -147,6 +163,7 @@
     {
       "id": 17,
       "nameKor": "토키노 메리",
+      "nameKorShort": "메리",
       "generation": 4,
       "debutOrder": 4,
       "personalColor": "D9BE69",
