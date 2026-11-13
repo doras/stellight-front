@@ -26,6 +26,12 @@ module.exports = (req, res, next) => {
     }
   }
 
+  // The real API updates only the fields in the body (the stellar is kept),
+  // while json-server's PUT replaces the whole record and drops stellarId
+  if (req.method === 'PUT' && /^\/schedules\/[^/]+$/.test(req.path)) {
+    req.method = 'PATCH';
+  }
+
   if(req.url === "/users-me?401") {
     res.status(401);
   }
