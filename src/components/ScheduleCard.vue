@@ -3,7 +3,11 @@
     class="schedule-card"
     :class="{ 'schedule-card--dimmed': dimmed }"
     variant="outlined"
+    tabindex="0"
+    role="button"
     @click="$emit('select', schedule)"
+    @keydown.enter.prevent="$emit('select', schedule)"
+    @keydown.space.prevent="$emit('select', schedule)"
   >
     <div class="card-header">
       <StellarNameChip
