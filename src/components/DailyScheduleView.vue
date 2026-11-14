@@ -4,7 +4,6 @@
       <v-btn
         icon="$prev"
         variant="text"
-        density="comfortable"
         aria-label="이전 날"
         @click="jumpByDays(-1)"
       />
@@ -18,7 +17,6 @@
       <v-btn
         icon="$next"
         variant="text"
-        density="comfortable"
         aria-label="다음 날"
         @click="jumpByDays(1)"
       />
@@ -120,6 +118,7 @@
             :key="schedule.id"
             :stellar="findStellar(schedule.stellarId)"
             :schedule="schedule"
+            :showTime="false"
             @select="$emit('select', $event)"
           />
         </div>
@@ -682,8 +681,8 @@ export default {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
-  padding: 12px 4px 4px;
+  column-gap: 6px;
+  padding: 4px 4px 0;
 }
 
 .day-off-label {
@@ -692,8 +691,10 @@ export default {
   font-weight: 700;
 }
 
+/* The vertical padding enlarges the touch target (about 40px high) without changing the chip */
 .day-off-chip-button {
   max-width: 100%;
+  padding: 8px 0;
   border-radius: 999px;
   cursor: pointer;
 }
@@ -749,8 +750,20 @@ export default {
   gap: 8px;
 }
 
-.dimmed {
+/* Past blocks: fade the text, but less the name chips (fading them blurs their text on the color) */
+.dimmed .block-header,
+.dimmed .day-off-label,
+.dimmed :deep(.time-span),
+.dimmed :deep(.title-div) {
   opacity: 0.5;
+}
+
+.dimmed :deep(.schedule-card .remark-div) {
+  opacity: 0.4;
+}
+
+.dimmed :deep(.stellar-name-chip) {
+  opacity: 0.75;
 }
 
 .empty-day {

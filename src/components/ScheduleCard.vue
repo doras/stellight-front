@@ -9,7 +9,7 @@
         :stellar="stellar"
         :fallbackName="schedule.stellarNameKor"
       />
-      <span class="time-span">{{ schedule.isFixedTime ? time : '시간 미정' }}</span>
+      <span v-if="showTime" class="time-span">{{ schedule.isFixedTime ? time : '시간 미정' }}</span>
     </div>
     <div class="title-div">{{ schedule.title }}</div>
     <div v-if="schedule.remark" class="remark-div">{{ schedule.remark }}</div>
@@ -32,6 +32,11 @@ export default {
     schedule: {
       type: Object,
       required: true,
+    },
+    // Hidden where the block header already tells it ("시간 미정")
+    showTime: {
+      type: Boolean,
+      default: true,
     },
   },
   emits: ['select'],
