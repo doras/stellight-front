@@ -586,6 +586,10 @@ export default {
       calendarView(newValue) {
         // Save the most recently set calendar view mode to localStorage
         setStorageItem(LS_KEY_CALENDAR_VIEW_MODE, newValue);
+        // Drop a request of the previous view still in flight: its data must not land in the new view,
+        // also when the calendar is not ready yet and no new request is sent right away
+        this.scheduleRequestSeq++;
+        this.isLoadingSchedules = false;
         this.pendingDayRange = null;
         if (newValue === VIEW_MODE_DEFAULT) {
           // Start again from yesterday-tomorrow; the daily view mounts (and auto-scrolls) once it is loaded

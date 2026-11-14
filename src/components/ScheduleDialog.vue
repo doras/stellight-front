@@ -126,7 +126,7 @@
 </template>
 
 <script>
-import { getUTF8Length, requiredRule, maxBytesRuleFactory, formatDateTime } from "@/utils/common";
+import { getUTF8Length, requiredRule, maxBytesRuleFactory, formatDateTime, findStellar, nowInScheduleZone } from "@/utils/common";
 import { SCHEDULES_API_URL } from "@/utils/consts";
 import { DateTime } from "luxon";
 import { DatePicker } from "v-calendar";
@@ -140,9 +140,10 @@ export default {
   data() {
     return {
       mode: this.schedule ? "modify" : "create",
-      stellar: this.schedule ? this.stellars.find(e => e.id === this.schedule.stellarId) : null,
+      stellar: this.schedule ? findStellar(this.stellars, this.schedule.stellarId) : null,
       isTimeNotFixed: this.schedule ? !this.schedule.isFixedTime : false,
-      date: this.schedule ? this.schedule.startDateTime : formatDateTime(DateTime.now()),
+      // Default to now in Korean time, the time zone of the schedules (not the device's)
+      date: this.schedule ? this.schedule.startDateTime : formatDateTime(nowInScheduleZone()),
       title: this.schedule ? this.schedule.title : "",
       remark: this.schedule ? this.schedule.remark : "",
       masks: {
