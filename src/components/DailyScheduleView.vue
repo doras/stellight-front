@@ -683,8 +683,8 @@ export default {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  column-gap: 6px;
-  padding: 4px 4px 0;
+  gap: 6px;
+  padding: 12px 4px 4px;
 }
 
 .day-off-label {
@@ -693,12 +693,18 @@ export default {
   font-weight: 700;
 }
 
-/* The vertical padding enlarges the touch target (about 40px high) without changing the chip */
 .day-off-chip-button {
+  position: relative;
   max-width: 100%;
-  padding: 8px 0;
   border-radius: 999px;
   cursor: pointer;
+}
+
+/* A larger touch target (about 40px high) without changing the layout or the focus ring around the chip */
+.day-off-chip-button::before {
+  content: '';
+  position: absolute;
+  inset: -8px 0;
 }
 
 .schedule-block {
