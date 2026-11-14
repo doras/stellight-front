@@ -1,27 +1,29 @@
 <template>
-  <v-card variant="outlined">
-    <v-card-item>
-      <v-card-title>설정</v-card-title>
-    </v-card-item>
-    <v-card-text>
-      <v-select
-        class="mb-2"
-        label="보기 모드"
-        :items="calendarViewOptions"
-        item-title="title"
-        item-value="value"
-        variant="outlined"
-        v-model="calendarViewProxy"
-      ></v-select>
-      <div class="mb-4" style="text-align: right;">
-        <FilterSaveButton :clickFuncSuper="saveFilter" />
-      </div>
-      <v-form>
+  <div class="settings-panel">
+    <v-select
+      class="mb-4"
+      label="보기 모드"
+      :items="calendarViewOptions"
+      item-title="title"
+      item-value="value"
+      variant="outlined"
+      hide-details
+      v-model="calendarViewProxy"
+    ></v-select>
+    <v-form>
+      <div class="all-row">
         <v-checkbox
           label="전체"
           v-model="allStellarCheckedProxy"
           density="compact"
+          hide-details
         ></v-checkbox>
+        <FilterSaveButton :clickFuncSuper="saveFilter" />
+      </div>
+      <div
+        class="stellar-checkboxes"
+        :class="{ 'stellar-checkboxes--two-columns': columns === 2 }"
+      >
         <v-checkbox
           v-for="stellar in stellars"
           :key="stellar.id"
@@ -44,9 +46,9 @@
             </span>
           </template>
         </v-checkbox>
-      </v-form>
-    </v-card-text>
-  </v-card>
+      </div>
+    </v-form>
+  </div>
 </template>
 
 <script>
@@ -82,6 +84,11 @@ export default {
       type: Function,
       required: true,
     },
+    // Number of columns of the stellar checkboxes (2 on small screens to fit more without scrolling)
+    columns: {
+      type: Number,
+      default: 1,
+    },
   },
   emits: ['update:calendarView', 'update:stellarIds', 'update:allStellarChecked'],
   computed: {
@@ -114,7 +121,30 @@ export default {
 </script>
 
 <style scoped>
+.settings-panel {
+  padding: 16px;
+}
+
+/* "전체" and the save button share a row to save height in the bottom sheet */
+.all-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/*
+ * Two columns at most; one column when a column would be narrower than 155px
+ * (e.g. 320px wide screens with display zoom), so that names are not broken into lines
+ */
+.stellar-checkboxes--two-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(max(155px, calc((100% - 4px) / 2)), 1fr));
+  column-gap: 4px;
+}
+
 .filter-label {
+  word-break: keep-all;
   color: #000;
 }
 

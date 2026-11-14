@@ -42,3 +42,8 @@ img.emoji {
     vertical-align: middle;
     margin: 0 0.1em;
 }
+
+/* Set while a bottom sheet is open (SchedulesView) */
+html.page-scroll-locked {
+    overflow: hidden;
+}

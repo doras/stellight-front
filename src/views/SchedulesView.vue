@@ -25,21 +25,6 @@
       </TransitionGroup>
     </div>
     <v-row>
-      <v-col
-        v-if="showSettings"
-        cols="12"
-        xl="2"
-        ref="settingsCol"
-      >
-        <ScheduleSettingsPanel
-          v-model:calendarView="calendarView"
-          :calendarViewOptions="calendarViewOptions"
-          :stellars="stellars"
-          v-model:stellarIds="stellarIds"
-          v-model:allStellarChecked="allStellarChecked"
-          :saveFilter="saveFilter"
-        />
-      </v-col>
       <v-col>
         <DailyScheduleView
           v-if="isDailyView"
@@ -99,6 +84,39 @@
       :stellars="stellars"
     ></ScheduleDialog>
   </v-dialog>
+  <!--
+    Settings as an overlay, so that it shows up wherever the page is scrolled and keeps the scroll position.
+    A bottom sheet on small screens (near the FAB, full width), a right drawer otherwise.
+  -->
+  <v-navigation-drawer
+    v-model="showSettings"
+    temporary
+    touchless
+    :location="smAndDown ? 'bottom' : 'right'"
+    :width="smAndDown ? settingsSheetHeight : 340"
+    class="settings-drawer"
+    :class="{ 'settings-drawer--sheet': smAndDown }"
+  >
+    <div class="settings-drawer-header">
+      <span class="text-h6">보기 설정</span>
+      <v-btn
+        icon="$close"
+        variant="text"
+        density="comfortable"
+        aria-label="닫기"
+        @click="showSettings = false"
+      />
+    </div>
+    <ScheduleSettingsPanel
+      v-model:calendarView="calendarView"
+      :calendarViewOptions="calendarViewOptions"
+      :stellars="stellars"
+      v-model:stellarIds="stellarIds"
+      v-model:allStellarChecked="allStellarChecked"
+      :saveFilter="saveFilter"
+      :columns="smAndDown ? 2 : 1"
+    />
+  </v-navigation-drawer>
   <!-- One-time notice for existing users switched to the default view by the settings migration -->
   <v-dialog
     :model-value="showDefaultViewNotice"
@@ -220,7 +238,7 @@ export default {
       }
     },
     data() {
-      const { mdAndDown, xlAndUp } = useDisplay();
+      const { mdAndDown, smAndDown, height } = useDisplay();
       const calendarViewOptions = [
         { title: "기본", value: VIEW_MODE_DEFAULT },
         { title: "주간", value: VIEW_MODE_WEEKLY },
@@ -249,7 +267,8 @@ export default {
         calendarView: calendarViewOptions.some(item => item.value === storedCalendarView) ? storedCalendarView : VIEW_MODE_DEFAULT,
         calendarViewOptions,
         mdAndDown,
-        xlAndUp,
+        smAndDown,
+        displayHeight: height,
         showSettings: false,
         isTouchDevice,
       };
@@ -436,13 +455,9 @@ export default {
       },
       toggleSettingsPanel() {
         this.showSettings = !this.showSettings;
-        if (this.showSettings && !this.xlAndUp) {
-          this.$nextTick(() => {
-            if (this.showSettings && this.$refs.settingsCol?.$el) {
-              this.$refs.settingsCol.$el.scrollIntoView({ behavior: 'smooth' });
-            }
-          });
-        }
+      },
+      setPageScrollLocked(locked) {
+        document.documentElement.classList.toggle('page-scroll-locked', locked);
       },
       onSavedSchedule() {
         this.dialog = false;
@@ -494,6 +509,14 @@ export default {
           }
         }
       },
+      // Up to 70% of the screen, so that the filtered result stays visible above the sheet.
+      // Capped so that a tall screen (e.g. a tablet) does not get a mostly empty sheet.
+      settingsSheetHeight() {
+        return Math.min(Math.round(this.displayHeight * 0.7), 600);
+      },
+      isSettingsSheetOpen() {
+        return this.showSettings && this.smAndDown;
+      },
       isDailyView() {
         return this.calendarView === VIEW_MODE_DEFAULT;
       },
@@ -512,7 +535,15 @@ export default {
         }))
       }
     },
+    beforeUnmount() {
+      this.setPageScrollLocked(false);
+    },
     watch: {
+      // Lock the page behind the bottom sheet, so that swiping on the scrim or a sheet with nothing
+      // to scroll does not move the page. Not on larger screens: hiding the scrollbar shifts the layout.
+      isSettingsSheetOpen(isOpen) {
+        this.setPageScrollLocked(isOpen);
+      },
       calendarView(newValue) {
         // Save the most recently set calendar view mode to localStorage
         localStorage.setItem(LS_KEY_CALENDAR_VIEW_MODE, newValue);
@@ -546,6 +577,20 @@ export default {
 .keep-all {
   word-break: keep-all;
 }
+
+.settings-drawer-header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 8px 8px 16px;
+  background-color: rgb(var(--v-theme-surface));
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+
 
 /* Below the app bar and the toolbar of the daily view */
 .floating-alerts {
@@ -590,4 +635,20 @@ export default {
   opacity: 0;
 }
 
+</style>
+
+<!--
+  Not scoped: v-navigation-drawer renders multiple root nodes, so it does not get the scope attribute
+  and scoped rules on .settings-drawer would not apply.
+-->
+<style>
+.settings-drawer--sheet {
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+
+/* Scrolling past the end of the panel must not scroll the page behind it */
+.settings-drawer .v-navigation-drawer__content {
+  overscroll-behavior: contain;
+}
 </style>
