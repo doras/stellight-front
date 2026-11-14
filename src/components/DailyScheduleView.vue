@@ -42,7 +42,6 @@
       v-for="day in days"
       :key="day.date"
       class="day-section"
-      :data-date="day.date"
       :data-anchor="day.date"
     >
       <h2 class="day-header">
@@ -79,7 +78,6 @@
         class="schedule-block"
         :class="{ dimmed: isDimmed(day.date, block.index) }"
         :data-anchor="getBlockKey(day.date, block.index)"
-        :data-block="getBlockKey(day.date, block.index)"
       >
         <h3 class="block-header">
           <v-icon icon="$clockOutline" size="18" class="block-icon" />
@@ -419,17 +417,17 @@ export default {
     updateVisibleDate() {
       const sections = this.$refs.root?.querySelectorAll('.day-section') ?? [];
       const stickyTop = this.getStickyTop();
-      let visibleDate = sections[0]?.dataset.date ?? this.visibleDate;
+      let visibleDate = sections[0]?.dataset.anchor ?? this.visibleDate;
       for (const section of sections) {
         if (section.getBoundingClientRect().top <= stickyTop + 1) {
-          visibleDate = section.dataset.date;
+          visibleDate = section.dataset.anchor;
         }
       }
       // At the bottom of the page, the header of the last day cannot reach the top.
       // Regard the last day as the current one, so that ▶ loads the next day at once.
       const lastSection = sections[sections.length - 1];
       if (lastSection && this.isScrolledToBottom() && lastSection.getBoundingClientRect().top < window.innerHeight) {
-        visibleDate = lastSection.dataset.date;
+        visibleDate = lastSection.dataset.anchor;
       }
       this.visibleDate = visibleDate;
     },
@@ -460,10 +458,14 @@ export default {
     },
     restoreScrollAnchor(anchor) {
       if (!anchor) return;
-      const element = this.$refs.root?.querySelector(`[data-anchor="${CSS.escape(anchor.key)}"]`);
+      const element = this.findAnchorElement(anchor.key);
       if (!element) return;
       const diff = element.getBoundingClientRect().top - anchor.top;
       if (Math.abs(diff) >= 1) window.scrollBy({ top: diff, behavior: 'instant' });
+    },
+    // Day sections and schedule blocks are found by data-anchor (date, or "date|block")
+    findAnchorElement(key) {
+      return this.$refs.root?.querySelector(`[data-anchor="${CSS.escape(key)}"]`) ?? null;
     },
     // Block number counted from today's 00-03 block: negative for past days (yesterday's 21-24 block is -1)
     getBlockOrdinal(date, blockIndex) {
@@ -510,14 +512,14 @@ export default {
       this.deferNavigationRelease();
     },
     scrollToDate(date, behavior = 'smooth') {
-      this.navigateTo(date, this.$refs.root?.querySelector(`.day-section[data-date="${date}"]`), behavior);
+      this.navigateTo(date, this.findAnchorElement(date), behavior);
     },
     autoScroll(behavior = 'smooth') {
       const target = this.nowTarget;
       if (target) {
         this.navigateTo(
           target.date,
-          this.$refs.root?.querySelector(`[data-block="${this.getBlockKey(target.date, target.index)}"]`),
+          this.findAnchorElement(this.getBlockKey(target.date, target.index)),
           behavior,
         );
       } else {
