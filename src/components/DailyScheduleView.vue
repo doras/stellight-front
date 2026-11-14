@@ -93,7 +93,7 @@
           <ScheduleCard
             v-for="schedule in block.schedules"
             :key="schedule.id"
-            :stellars="stellars"
+            :stellar="findStellar(schedule.stellarId)"
             :schedule="schedule"
             @select="$emit('select', $event)"
           />
@@ -118,7 +118,7 @@
           <ScheduleCard
             v-for="schedule in day.untimed"
             :key="schedule.id"
-            :stellars="stellars"
+            :stellar="findStellar(schedule.stellarId)"
             :schedule="schedule"
             @select="$emit('select', $event)"
           />

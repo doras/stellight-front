@@ -18,15 +18,16 @@
 
 <script>
 import StellarNameChip from '@/components/StellarNameChip.vue';
-import { findStellar, formatScheduleTime } from '@/utils/common';
+import { formatScheduleTime } from '@/utils/common';
 
 export default {
   name: 'ScheduleCard',
   components: { StellarNameChip },
   props: {
-    stellars: {
-      type: Array,
-      required: true,
+    // The stellar of the schedule (null if not found)
+    stellar: {
+      type: Object,
+      default: null,
     },
     schedule: {
       type: Object,
@@ -35,9 +36,6 @@ export default {
   },
   emits: ['select'],
   computed: {
-    stellar() {
-      return findStellar(this.stellars, this.schedule.stellarId);
-    },
     time() {
       return formatScheduleTime(this.schedule.startDateTime);
     },
