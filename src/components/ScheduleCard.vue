@@ -5,9 +5,9 @@
     variant="outlined"
     tabindex="0"
     role="button"
-    @click="$emit('select', schedule)"
-    @keydown.enter.prevent="$emit('select', schedule)"
-    @keydown.space.prevent="$emit('select', schedule)"
+    @click="select"
+    @keydown.enter.prevent="select"
+    @keydown.space.prevent="select"
   >
     <div class="card-header">
       <StellarNameChip
@@ -50,6 +50,13 @@ export default {
   computed: {
     time() {
       return formatScheduleTime(this.schedule.startDateTime);
+    },
+  },
+  methods: {
+    select(event) {
+      // Holding Enter / Space repeats keydown: open only once
+      if (event?.repeat) return;
+      this.$emit('select', this.schedule);
     },
   },
 };
