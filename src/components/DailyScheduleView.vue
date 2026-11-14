@@ -679,11 +679,12 @@ export default {
   background-color: rgb(var(--v-theme-primary));
 }
 
+/* Wrapped rows are 16px apart, so that the chips' hit areas (8px above and below) meet without overlapping */
 .day-off-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: 16px 6px;
   padding: 12px 4px 4px;
 }
 
