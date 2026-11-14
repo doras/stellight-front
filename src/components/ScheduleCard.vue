@@ -7,7 +7,8 @@
     role="button"
     @click="select"
     @keydown.enter.prevent="select"
-    @keydown.space.prevent="select"
+    @keydown.space.prevent
+    @keyup.space.prevent="select"
   >
     <div class="card-header">
       <StellarNameChip
@@ -54,7 +55,7 @@ export default {
   },
   methods: {
     select(event) {
-      // Holding Enter / Space repeats keydown: open only once
+      // Like a native button: Enter opens on keydown (only once while held), Space on keyup
       if (event?.repeat) return;
       this.$emit('select', this.schedule);
     },
