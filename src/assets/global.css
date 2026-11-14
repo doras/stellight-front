@@ -42,3 +42,10 @@ img.emoji {
     vertical-align: middle;
     margin: 0 0.1em;
 }
+
+/* Set while the settings bottom sheet or the schedule creation dialog is open (SchedulesView) */
+html.page-scroll-locked {
+    overflow: hidden;
+    /* Keep the space of the scrollbar so that the layout does not shift */
+    scrollbar-gutter: stable;
+}

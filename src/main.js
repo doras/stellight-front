@@ -15,6 +15,10 @@ import { registerPlugins } from '@/plugins'
 
 import '@/assets/global.css'
 import emoji from './directives/emoji'
+import { runSettingsMigrations } from '@/utils/settingsMigration'
+
+// Migrate the stored settings before any component reads them
+runSettingsMigrations()
 
 const app = createApp(App)
 

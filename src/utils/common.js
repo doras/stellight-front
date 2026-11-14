@@ -1,3 +1,5 @@
+import { DateTime } from "luxon";
+
 export const getUTF8Length = str => new TextEncoder().encode(str).length;
 export const requiredRule = v => !!v || '필수 값입니다.';
 export function hasKoreanBatchim(korean) {
@@ -23,4 +25,42 @@ export function getStellarGroupRank(stellar) {
   if (!stellar.isGraduated && stellar.generation === 0) return 1;
   if (stellar.isGraduated && stellar.generation > 0)  return 2;
   return 3; // isGraduated && generation === 0
+}
+
+// Schedules are stored in Korean local time (no time zone in the API).
+// "Now" and dates are compared in this zone, so that the view is right on devices in other zones.
+export const SCHEDULE_TIME_ZONE = 'Asia/Seoul';
+export const nowInScheduleZone = () => DateTime.now().setZone(SCHEDULE_TIME_ZONE);
+export const parseScheduleDate = isoDate => DateTime.fromISO(isoDate, { zone: SCHEDULE_TIME_ZONE });
+
+export const findStellar = (stellars, stellarId) => stellars.find(s => s.id === stellarId) || null;
+
+// Short Korean name for compact labels; falls back to the full name when not set
+export const getStellarShortName = stellar => stellar?.nameKorShort || stellar?.nameKor || '';
+
+export const formatScheduleTime = startDateTime =>
+  DateTime.fromISO(startDateTime).toLocaleString({ hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
+
+// Day off (휴방) has no API field yet. By convention, it is a schedule without a fixed time
+// whose title starts with "휴방".
+// Temporary: to be replaced by the explicit isDayOff field (doras/stellight-front#129, doras/stellight-api#92).
+export const isDayOff = schedule => !schedule.isFixedTime && schedule.title.trim().startsWith('휴방');
+
+// WCAG relative luminance of a hex color ("RRGGBB" or "#RRGGBB")
+function getRelativeLuminance(hex) {
+  const value = hex.replace('#', '');
+  const [r, g, b] = [0, 2, 4].map(i => {
+    const c = parseInt(value.substring(i, i + 2), 16) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  });
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+// Returns pure "#000" or "#fff", whichever has the higher contrast on the given background.
+// Keep the result opaque and unmodified: the contrast is only guaranteed for these exact colors.
+export function getContrastTextColor(backgroundHex) {
+  const luminance = getRelativeLuminance(backgroundHex);
+  const contrastWithBlack = (luminance + 0.05) / 0.05;
+  const contrastWithWhite = 1.05 / (luminance + 0.05);
+  return contrastWithBlack >= contrastWithWhite ? '#000' : '#fff';
 }

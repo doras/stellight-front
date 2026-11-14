@@ -48,11 +48,11 @@
 </template>
 
 <script>
-import { DateTime } from "luxon";
 import { LOGIN_INFO_KEY } from "@/utils/consts";
 import ScheduleDialog from "./ScheduleDialog.vue";
 import ScheduleDetailDialog from "./ScheduleDetailDialog.vue";
 import { useDisplay } from "vuetify";
+import { findStellar, formatScheduleTime } from "@/utils/common";
 
 export default {
   props: ["stellars", "schedule"],
@@ -84,10 +84,10 @@ export default {
   computed: {
     // Precompute the stellar object
     stellar() {
-      return this.stellars.find(e => e.id === this.schedule.stellarId) || null;
+      return findStellar(this.stellars, this.schedule.stellarId);
     },
     time() {
-      return DateTime.fromISO(this.schedule.startDateTime).toLocaleString({ hour: '2-digit', minute: '2-digit', hourCycle: 'h23'});
+      return formatScheduleTime(this.schedule.startDateTime);
     }
   },
   components: { ScheduleDialog, ScheduleDetailDialog }
