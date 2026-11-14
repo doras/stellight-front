@@ -16,6 +16,7 @@ import { aliases, mdi } from 'vuetify/iconsets/mdi-svg'
 import {
   mdiAlertCircle,
   mdiCheckCircle,
+  mdiClockOutline,
   mdiCloseCircle,
   mdiCogOutline,
   mdiContentSave,
@@ -36,6 +37,7 @@ export default createVuetify({
       error: mdiCloseCircle,
       warning: mdiAlertCircle,
       checkCircle: mdiCheckCircle,
+      clockOutline: mdiClockOutline,
       cogOutline: mdiCogOutline,
       contentSave: mdiContentSave,
       emailOutline: mdiEmailOutline,

@@ -82,6 +82,7 @@
         :data-block="getBlockKey(day.date, block.index)"
       >
         <h3 class="block-header">
+          <v-icon icon="$clockOutline" size="18" class="block-icon" />
           {{ formatBlockRange(block.index) }}
           <span
             v-if="nowTargetKey === getBlockKey(day.date, block.index)"
@@ -111,7 +112,10 @@
         :class="{ dimmed: isPastDay(day.date) }"
         :data-anchor="`${day.date}|untimed`"
       >
-        <h3 class="block-header">시간 미정</h3>
+        <h3 class="block-header">
+          <v-icon icon="$clockOutline" size="18" class="block-icon" />
+          시간 미정
+        </h3>
         <div class="card-grid">
           <ScheduleCard
             v-for="schedule in day.untimed"
@@ -613,7 +617,7 @@ export default {
   gap: 8px;
   height: var(--day-header-height);
   padding: 0 4px;
-  font-size: 1.125rem;
+  font-size: 1.25rem;
   font-weight: 700;
   background-color: rgb(var(--v-theme-surface));
   border-bottom: 2px solid rgba(0, 0, 0, 0.12);
@@ -649,17 +653,31 @@ export default {
 
 .schedule-block {
   scroll-margin-top: calc(var(--app-bar-height) + var(--toolbar-height) + var(--day-header-height));
-  padding: 12px 4px 4px;
+  padding: 20px 4px 4px;
 }
 
+/* Between the day header (20px) and the card titles (16px) */
 .block-header {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 8px;
-  font-size: 0.9375rem;
+  font-size: 1.0625rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+}
+
+/* A line to the right marks where the next time block starts */
+.block-header::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background-color: rgba(0, 0, 0, 0.12);
+}
+
+.block-icon {
+  margin-right: -2px;
+  color: rgba(0, 0, 0, 0.6);
 }
 
 .now-badge {
