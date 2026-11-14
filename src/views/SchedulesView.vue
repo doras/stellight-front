@@ -48,6 +48,7 @@
           :startDate="dayRange.start"
           :endDate="dayRange.end"
           :dataVersion="dataVersion"
+          :loading="isLoadingSchedules"
           @select="openScheduleDialog"
           @update:range="onDayRangeUpdated"
         />
@@ -242,6 +243,7 @@ export default {
         scheduleDialogSeq: 0,
         dayRange: getInitialDayRange(),
         dataVersion: 0,
+        isLoadingSchedules: false,
         showDefaultViewNotice: !!readLocalStorage(LS_KEY_DEFAULT_VIEW_NOTICE),
         alertList: [],
         calendarView: calendarViewOptions.some(item => item.value === storedCalendarView) ? storedCalendarView : VIEW_MODE_DEFAULT,
@@ -330,11 +332,11 @@ export default {
       },
 
       // Range of the schedules to load for the current view, or null if it is not ready yet
-      getScheduleRange() {
+      getScheduleRange(dayRange) {
         if (this.calendarView === VIEW_MODE_DEFAULT) {
           return {
-            firstDateTime: DateTime.fromISO(this.dayRange.start),
-            lastDateTime: DateTime.fromISO(this.dayRange.end).endOf("day"),
+            firstDateTime: DateTime.fromISO(dayRange.start),
+            lastDateTime: DateTime.fromISO(dayRange.end).endOf("day"),
           };
         }
         return this.getCalendarRange();
@@ -358,8 +360,11 @@ export default {
           lastDateTime: firstDateTime.endOf("month"),
         };
       },
-      loadSchedules() {
-        const range = this.getScheduleRange();
+      // nextDayRange: a new range for the daily view. It is applied together with its data,
+      // so that the view does not show the new days empty while loading.
+      loadSchedules(nextDayRange = null) {
+        const dayRange = nextDayRange ?? this.dayRange;
+        const range = this.getScheduleRange(dayRange);
         if (!range) return;
         const { firstDateTime, lastDateTime } = range;
 
@@ -372,9 +377,11 @@ export default {
         const vm = this;
         // Ignore responses of older requests (e.g. the range or the view changed in the meantime)
         const requestSeq = ++this.scheduleRequestSeq;
+        this.isLoadingSchedules = true;
         this.$axios.get(SCHEDULES_API_URL, { params })
           .then(response => {
             if (requestSeq !== vm.scheduleRequestSeq) return;
+            if (vm.calendarView === VIEW_MODE_DEFAULT) vm.dayRange = dayRange;
             const stellarRankMap = new Map(vm.stellars.map((s, idx) => [s.id, idx]));
             vm.schedules = response.data.content.map(elem => {
               elem.jsDate = DateTime.fromISO(elem.startDateTime).toJSDate();
@@ -397,6 +404,9 @@ export default {
             if (requestSeq !== vm.scheduleRequestSeq) return;
             vm.noticeError(`스케줄 목록 조회 중 오류가 발생했습니다. ${error.response?.data?.message}`);
             console.log(error);
+          })
+          .finally(() => {
+            if (requestSeq === vm.scheduleRequestSeq) vm.isLoadingSchedules = false;
           });
       },
       noticeError(errorMsg) {
@@ -413,8 +423,7 @@ export default {
       },
       onDayRangeUpdated(range) {
         // Re-fetch the whole range (the data is small)
-        this.dayRange = range;
-        this.loadSchedules();
+        this.loadSchedules(range);
       },
       dismissDefaultViewNotice() {
         this.showDefaultViewNotice = false;

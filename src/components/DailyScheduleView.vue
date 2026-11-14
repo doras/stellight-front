@@ -22,7 +22,14 @@
         aria-label="다음 날"
         @click="jumpByDays(1)"
       />
-      <span class="toolbar-date ml-3">{{ formatDayTitle(visibleDate) }}</span>
+      <span class="toolbar-date ml-3">{{ formatDayTitle(navTargetDate ?? visibleDate) }}</span>
+      <v-progress-linear
+        v-if="loading"
+        class="toolbar-progress"
+        indeterminate
+        color="primary"
+        height="2"
+      />
     </div>
 
     <div class="text-center my-3">
@@ -134,6 +141,10 @@ import { findStellar, isDayOff } from '@/utils/common';
 const BLOCK_HOURS = 3;
 const BLOCKS_PER_DAY = 24 / BLOCK_HOURS;
 const NOW_UPDATE_INTERVAL_MS = 60 * 1000;
+// A navigation scroll is regarded as finished when no scroll event comes for this long
+// (fallback for browsers without the scrollend event)
+const NAV_SCROLL_IDLE_MS = 200;
+const SCROLL_KEYS = new Set(['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ']);
 const RELATIVE_DAY_LABELS = { '-1': '어제', '0': '오늘', '1': '내일' };
 
 const toISODate = dateTime => dateTime.toISODate();
@@ -165,14 +176,23 @@ export default {
       type: Number,
       required: true,
     },
+    // Whether the parent is loading schedules (e.g. for an extended range)
+    loading: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: ['select', 'update:range'],
   data() {
     return {
       now: DateTime.now(),
       visibleDate: toISODate(DateTime.now()),
-      // Scroll action that waits for the next data load ({ type: 'auto' } or { type: 'date', date })
+      // Scroll action that waits for the data of an extended range
+      // ({ type: 'auto' } or { type: 'date', date }, with the dataVersion at the request)
       pendingScroll: null,
+      // Date shown in the toolbar while navigating to it (◀ / ▶ / 오늘), instead of the dates
+      // that the smooth scroll passes by. Released when the scroll ends or the user scrolls.
+      navTargetDate: null,
       hasAutoScrolled: false,
     };
   },
@@ -272,22 +292,41 @@ export default {
         }
       });
     },
+    loading(isLoading) {
+      // The load for the pending scroll failed (no new data): give up the navigation
+      if (!isLoading && this.pendingScroll && this.pendingScroll.version === this.dataVersion) {
+        this.pendingScroll = null;
+        this.releaseNavigation();
+      }
+    },
   },
   created() {
     // Not reactive: none of these is used in rendering
     this.nowTimer = null;
+    this.navIdleTimer = null;
     // Top visible element measured before a re-render, to restore its position after it
     this.scrollAnchor = null;
+    // Element scrolled to by the current navigation
+    this.navTargetElement = null;
   },
   mounted() {
     this.nowTimer = setInterval(this.updateNow, NOW_UPDATE_INTERVAL_MS);
     document.addEventListener('visibilitychange', this.onVisibilityChange);
     window.addEventListener('scroll', this.onScroll, { passive: true });
+    window.addEventListener('scrollend', this.onScrollEnd);
+    window.addEventListener('wheel', this.onUserScrollInput, { passive: true });
+    window.addEventListener('touchstart', this.onUserScrollInput, { passive: true });
+    window.addEventListener('keydown', this.onKeyDown);
   },
   beforeUnmount() {
     clearInterval(this.nowTimer);
+    clearTimeout(this.navIdleTimer);
     document.removeEventListener('visibilitychange', this.onVisibilityChange);
     window.removeEventListener('scroll', this.onScroll);
+    window.removeEventListener('scrollend', this.onScrollEnd);
+    window.removeEventListener('wheel', this.onUserScrollInput);
+    window.removeEventListener('touchstart', this.onUserScrollInput);
+    window.removeEventListener('keydown', this.onKeyDown);
   },
   beforeUpdate() {
     // Remember the top visible block so that re-rendering (new data, prepended day, ...)
@@ -309,7 +348,60 @@ export default {
       if (document.visibilityState === 'visible') this.updateNow();
     },
     onScroll() {
+      if (this.navTargetDate !== null) {
+        // Keep showing the navigation target; extend the idle timer while the scroll goes on
+        if (this.navIdleTimer) this.deferNavigationRelease();
+        return;
+      }
       this.updateVisibleDate();
+    },
+    onScrollEnd() {
+      // scrollend may also come from another scroll (e.g. the scroll anchor correction of a prepended day),
+      // so release only when the navigation target is reached
+      if (this.navIdleTimer && this.isNavigationTargetReached()) this.finishNavigation();
+    },
+    isNavigationTargetReached() {
+      const element = this.navTargetElement;
+      if (!element?.isConnected) return true;
+      const expectedTop = parseFloat(getComputedStyle(element).scrollMarginTop) || 0;
+      if (Math.abs(element.getBoundingClientRect().top - expectedTop) <= 2) return true;
+      // The page cannot scroll further toward the target
+      const scrollingElement = document.scrollingElement ?? document.documentElement;
+      return window.scrollY <= 0 || window.innerHeight + window.scrollY >= scrollingElement.scrollHeight - 1;
+    },
+    onKeyDown(event) {
+      if (SCROLL_KEYS.has(event.key)) this.onUserScrollInput();
+    },
+    // The user scrolls by themselves: stop following the navigation, including one waiting for data
+    onUserScrollInput() {
+      if (this.navTargetDate === null && !this.pendingScroll) return;
+      this.pendingScroll = null;
+      this.releaseNavigation();
+    },
+    // Shows the date in the toolbar until releaseNavigation()
+    lockNavigation(date) {
+      clearTimeout(this.navIdleTimer);
+      this.navIdleTimer = null;
+      this.navTargetDate = date;
+    },
+    deferNavigationRelease() {
+      clearTimeout(this.navIdleTimer);
+      this.navIdleTimer = setTimeout(this.finishNavigation, NAV_SCROLL_IDLE_MS);
+    },
+    // The navigation scroll ended: keep showing the target date, even if its header could not reach
+    // the top (e.g. the last day of the range). It is recomputed when the user scrolls.
+    finishNavigation() {
+      this.releaseNavigation(true);
+    },
+    // Cancelled navigation (user scroll, failed load): show the date at the scroll position
+    releaseNavigation(keepTargetDate = false) {
+      clearTimeout(this.navIdleTimer);
+      this.navIdleTimer = null;
+      this.navTargetElement = null;
+      if (this.navTargetDate === null) return;
+      this.visibleDate = this.navTargetDate;
+      this.navTargetDate = null;
+      if (!keepTargetDate) this.updateVisibleDate();
     },
     // Height covered by the app bar and the toolbar (where the sticky date header sits)
     getStickyTop() {
@@ -325,7 +417,18 @@ export default {
           visibleDate = section.dataset.date;
         }
       }
+      // At the bottom of the page, the header of the last day cannot reach the top.
+      // Regard the last day as the current one, so that ▶ loads the next day at once.
+      const lastSection = sections[sections.length - 1];
+      if (lastSection && this.isScrolledToBottom() && lastSection.getBoundingClientRect().top < window.innerHeight) {
+        visibleDate = lastSection.dataset.date;
+      }
       this.visibleDate = visibleDate;
+    },
+    // Scrolled down to the end of the page (and the page is scrollable at all)
+    isScrolledToBottom() {
+      const scrollingElement = document.scrollingElement ?? document.documentElement;
+      return window.scrollY > 0 && window.innerHeight + window.scrollY >= scrollingElement.scrollHeight - 1;
     },
     captureScrollAnchor() {
       const stickyTop = this.getStickyTop();
@@ -386,18 +489,25 @@ export default {
     scrollToElement(element, behavior) {
       element?.scrollIntoView({ block: 'start', behavior });
     },
+    // Scrolls to the element while showing the date in the toolbar until the scroll ends
+    navigateTo(date, element, behavior) {
+      this.lockNavigation(date);
+      this.navTargetElement = element ?? null;
+      this.scrollToElement(element, behavior);
+      // Released by scrollend, or when no scroll event follows (also when there was nothing to scroll)
+      this.deferNavigationRelease();
+    },
     scrollToDate(date, behavior = 'smooth') {
-      this.visibleDate = date;
-      this.scrollToElement(this.$refs.root?.querySelector(`.day-section[data-date="${date}"]`), behavior);
+      this.navigateTo(date, this.$refs.root?.querySelector(`.day-section[data-date="${date}"]`), behavior);
     },
     autoScroll(behavior = 'smooth') {
       const target = this.nowTarget;
       if (target) {
-        this.scrollToElement(
+        this.navigateTo(
+          target.date,
           this.$refs.root?.querySelector(`[data-block="${this.getBlockKey(target.date, target.index)}"]`),
           behavior,
         );
-        this.visibleDate = target.date;
       } else {
         this.scrollToDate(toISODate(this.today), behavior);
       }
@@ -413,26 +523,33 @@ export default {
         this.runScrollAction(action);
         return;
       }
-      this.pendingScroll = action;
-      this.$emit('update:range', {
+      this.requestRangeForScroll({
         start: date < this.startDate ? date : this.startDate,
         end: date > this.endDate ? date : this.endDate,
-      });
+      }, action);
+    },
+    // The parent applies the new range together with its data, then the action runs (see dataVersion)
+    requestRangeForScroll(range, action) {
+      this.pendingScroll = { ...action, version: this.dataVersion };
+      this.$emit('update:range', range);
     },
     goToday() {
       this.updateNow();
       const today = toISODate(this.today);
+      this.lockNavigation(today);
       // Include the block right before the current one (yesterday's 21-24 block at 00-03)
       const start = toISODate(this.today.minus({ days: 1 }));
       if (start < this.startDate) {
-        this.pendingScroll = { type: 'auto' };
-        this.$emit('update:range', { start, end: today > this.endDate ? today : this.endDate });
+        this.requestRangeForScroll({ start, end: today > this.endDate ? today : this.endDate }, { type: 'auto' });
         return;
       }
       this.scrollWithinRange(today, { type: 'auto' });
     },
     jumpByDays(days) {
-      const date = toISODate(DateTime.fromISO(this.visibleDate).plus({ days }));
+      // Count from the date being navigated to, so that quick repeated clicks are not lost
+      const baseDate = this.navTargetDate ?? this.visibleDate;
+      const date = toISODate(DateTime.fromISO(baseDate).plus({ days }));
+      this.lockNavigation(date);
       this.scrollWithinRange(date, { type: 'date', date });
     },
     prependDay() {
@@ -468,18 +585,15 @@ export default {
   font-weight: 500;
 }
 
+.toolbar-progress {
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+}
+
 .day-section {
   scroll-margin-top: calc(var(--app-bar-height) + var(--toolbar-height));
   margin-bottom: 24px;
-}
-
-/*
- * Leave enough room below the last day so that its header can reach the top when ◀ / ▶ scroll to it.
- * Otherwise the toolbar date falls back to the previous day and ▶ goes to the same day again.
- * 260px: the "next day" button and the bottom padding of the page that follow it.
- */
-.day-section:last-of-type {
-  min-height: calc(100vh - var(--app-bar-height) - var(--toolbar-height) - 260px);
 }
 
 .day-header {
