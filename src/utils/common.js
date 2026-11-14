@@ -35,8 +35,9 @@ export const getStellarShortName = stellar => stellar?.nameKorShort || stellar?.
 export const formatScheduleTime = startDateTime =>
   DateTime.fromISO(startDateTime).toLocaleString({ hour: '2-digit', minute: '2-digit', hourCycle: 'h23' });
 
-// Day off (휴방) has no API field. By convention, it is a schedule without a fixed time
+// Day off (휴방) has no API field yet. By convention, it is a schedule without a fixed time
 // whose title starts with "휴방".
+// Temporary: to be replaced by the explicit isDayOff field (doras/stellight-front#129, doras/stellight-api#92).
 export const isDayOff = schedule => !schedule.isFixedTime && schedule.title.trim().startsWith('휴방');
 
 // WCAG relative luminance of a hex color ("RRGGBB" or "#RRGGBB")

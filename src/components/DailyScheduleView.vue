@@ -68,27 +68,9 @@
           <StellarNameChip
             :stellar="findStellar(schedule.stellarId)"
             :fallbackName="schedule.stellarNameKor"
-            :marked="!!schedule.remark"
+            :marked="hasDayOffDetail(schedule)"
           />
         </button>
-      </div>
-
-      <div
-        v-if="day.untimed.length > 0"
-        class="schedule-block"
-        :class="{ dimmed: isPastDay(day.date) }"
-        :data-anchor="`${day.date}|untimed`"
-      >
-        <h3 class="block-header">시간 미정</h3>
-        <div class="card-grid">
-          <ScheduleCard
-            v-for="schedule in day.untimed"
-            :key="schedule.id"
-            :stellars="stellars"
-            :schedule="schedule"
-            @select="$emit('select', $event)"
-          />
-        </div>
       </div>
 
       <div
@@ -111,6 +93,28 @@
         <div class="card-grid">
           <ScheduleCard
             v-for="schedule in block.schedules"
+            :key="schedule.id"
+            :stellars="stellars"
+            :schedule="schedule"
+            @select="$emit('select', $event)"
+          />
+        </div>
+      </div>
+
+      <!--
+        At the end of the day: after the auto-scroll, the rest of the day is read downward,
+        so "time not fixed" streams (often "sometime in the evening") stay on the reading path
+      -->
+      <div
+        v-if="day.untimed.length > 0"
+        class="schedule-block"
+        :class="{ dimmed: isPastDay(day.date) }"
+        :data-anchor="`${day.date}|untimed`"
+      >
+        <h3 class="block-header">시간 미정</h3>
+        <div class="card-grid">
+          <ScheduleCard
+            v-for="schedule in day.untimed"
             :key="schedule.id"
             :stellars="stellars"
             :schedule="schedule"
@@ -471,6 +475,10 @@ export default {
     },
     isPastDay(date) {
       return DateTime.fromISO(date) < this.today;
+    },
+    // A day off with more to read in the dialog: a remark, or text added to the title (e.g. "휴방 (일본 여행)")
+    hasDayOffDetail(schedule) {
+      return !!schedule.remark || schedule.title.trim() !== '휴방';
     },
     isEmptyDay(day) {
       return day.dayOffs.length === 0 && day.untimed.length === 0 && day.blocks.length === 0;
