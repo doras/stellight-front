@@ -83,10 +83,16 @@
       </v-col>
     </v-row>
   </v-container>
+  <!--
+    scroll-strategy="none": Vuetify 3.1's scroll blocking makes the stellar select menu open far below
+    on its first opening when the page is scrolled (fixed in Vuetify 3.3, remove this with #131). The page is locked by
+    isPageScrollLocked instead.
+  -->
   <v-dialog
     v-model="dialog"
     width="600px"
     persistent
+    scroll-strategy="none"
   >
     <ScheduleDialog
       @close="dialog = false"
@@ -545,6 +551,10 @@ export default {
       isSettingsSheetOpen() {
         return this.showSettings && this.smAndDown;
       },
+      // Overlays that lock the page with the page-scroll-locked class instead of Vuetify's scroll blocking
+      isPageScrollLocked() {
+        return this.isSettingsSheetOpen || this.dialog;
+      },
       isDailyView() {
         return this.calendarView === VIEW_MODE_DEFAULT;
       },
@@ -568,9 +578,10 @@ export default {
     },
     watch: {
       // Lock the page behind the bottom sheet, so that swiping on the scrim or a sheet with nothing
-      // to scroll does not move the page. Not on larger screens: hiding the scrollbar shifts the layout.
-      isSettingsSheetOpen(isOpen) {
-        this.setPageScrollLocked(isOpen);
+      // to scroll does not move the page (not behind the drawer on larger screens: its content contains
+      // the scrolling), and behind the creation dialog (see its scroll-strategy).
+      isPageScrollLocked(locked) {
+        this.setPageScrollLocked(locked);
       },
       calendarView(newValue) {
         // Save the most recently set calendar view mode to localStorage
