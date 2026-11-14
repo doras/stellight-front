@@ -142,7 +142,7 @@
 import { DateTime } from 'luxon';
 import ScheduleCard from '@/components/ScheduleCard.vue';
 import StellarNameChip from '@/components/StellarNameChip.vue';
-import { findStellar, isDayOff } from '@/utils/common';
+import { findStellar, isDayOff, nowInScheduleZone, parseScheduleDate } from '@/utils/common';
 
 const BLOCK_HOURS = 3;
 const BLOCKS_PER_DAY = 24 / BLOCK_HOURS;
@@ -187,12 +187,17 @@ export default {
       type: Boolean,
       default: false,
     },
+    // Range being loaded ({ start, end }), applied as startDate/endDate when its data arrives
+    requestedRange: {
+      type: Object,
+      default: null,
+    },
   },
   emits: ['select', 'update:range'],
   data() {
     return {
-      now: DateTime.now(),
-      visibleDate: toISODate(DateTime.now()),
+      now: nowInScheduleZone(),
+      visibleDate: toISODate(nowInScheduleZone()),
       // Scroll action that waits for the data of an extended range
       // ({ type: 'auto' } or { type: 'date', date }, with the dataVersion at the request)
       pendingScroll: null,
@@ -206,11 +211,19 @@ export default {
     today() {
       return this.now.startOf('day');
     },
+    // The range including one still loading, so that a new request extends it instead of
+    // asking for the same days again (e.g. "이전 날 보기" tapped several times while loading)
+    rangeStart() {
+      return this.requestedRange?.start ?? this.startDate;
+    },
+    rangeEnd() {
+      return this.requestedRange?.end ?? this.endDate;
+    },
     previousDate() {
-      return toISODate(DateTime.fromISO(this.startDate).minus({ days: 1 }));
+      return toISODate(DateTime.fromISO(this.rangeStart).minus({ days: 1 }));
     },
     nextDate() {
-      return toISODate(DateTime.fromISO(this.endDate).plus({ days: 1 }));
+      return toISODate(DateTime.fromISO(this.rangeEnd).plus({ days: 1 }));
     },
     days() {
       const start = DateTime.fromISO(this.startDate);
@@ -287,15 +300,10 @@ export default {
     dataVersion() {
       // Run the scroll action after the DOM is updated with the new data
       this.$nextTick(() => {
-        if (!this.hasAutoScrolled) {
-          this.hasAutoScrolled = true;
-          this.pendingScroll = null;
-          this.autoScroll('instant');
-        } else if (this.pendingScroll) {
-          const action = this.pendingScroll;
-          this.pendingScroll = null;
-          this.runScrollAction(action);
-        }
+        if (!this.pendingScroll) return;
+        const action = this.pendingScroll;
+        this.pendingScroll = null;
+        this.runScrollAction(action);
       });
     },
     loading(isLoading) {
@@ -316,6 +324,10 @@ export default {
     this.navTargetElement = null;
   },
   mounted() {
+    // The parent mounts this view once the data of its range is loaded: auto-scroll to now
+    this.hasAutoScrolled = true;
+    this.autoScroll('instant');
+
     this.nowTimer = setInterval(this.updateNow, NOW_UPDATE_INTERVAL_MS);
     document.addEventListener('visibilitychange', this.onVisibilityChange);
     window.addEventListener('scroll', this.onScroll, { passive: true });
@@ -348,7 +360,7 @@ export default {
       return findStellar(this.stellars, stellarId);
     },
     updateNow() {
-      this.now = DateTime.now();
+      this.now = nowInScheduleZone();
     },
     onVisibilityChange() {
       if (document.visibilityState === 'visible') this.updateNow();
@@ -376,11 +388,14 @@ export default {
       return window.scrollY <= 0 || window.innerHeight + window.scrollY >= scrollingElement.scrollHeight - 1;
     },
     onKeyDown(event) {
-      if (SCROLL_KEYS.has(event.key)) this.onUserScrollInput();
+      if (SCROLL_KEYS.has(event.key)) this.onUserScrollInput(event);
     },
     // The user scrolls by themselves: stop following the navigation, including one waiting for data
-    onUserScrollInput() {
+    onUserScrollInput(event) {
       if (this.navTargetDate === null && !this.pendingScroll) return;
+      // Tapping (or pressing Space on) ◀ / ▶ / 오늘 is not scrolling: it must not cancel the navigation
+      // that the button itself continues, e.g. the second of two quick taps on ▶
+      if (event?.target instanceof Element && event.target.closest('.daily-toolbar')) return;
       this.pendingScroll = null;
       this.releaseNavigation();
     },
@@ -469,7 +484,7 @@ export default {
     },
     // Block number counted from today's 00-03 block: negative for past days (yesterday's 21-24 block is -1)
     getBlockOrdinal(date, blockIndex) {
-      const dayOffset = Math.round(DateTime.fromISO(date).diff(this.today, 'days').days);
+      const dayOffset = Math.round(parseScheduleDate(date).diff(this.today, 'days').days);
       return dayOffset * BLOCKS_PER_DAY + blockIndex;
     },
     getBlockKey(date, blockIndex) {
@@ -480,7 +495,7 @@ export default {
       return this.getBlockOrdinal(date, blockIndex) < this.currentBlockOrdinal - 1;
     },
     isPastDay(date) {
-      return DateTime.fromISO(date) < this.today;
+      return parseScheduleDate(date) < this.today;
     },
     // A day off with more to read in the dialog: a remark, or text added to the title (e.g. "휴방 (일본 여행)")
     hasDayOffDetail(schedule) {
@@ -490,7 +505,7 @@ export default {
       return day.dayOffs.length === 0 && day.untimed.length === 0 && day.blocks.length === 0;
     },
     getRelativeDayLabel(date) {
-      const offset = Math.round(DateTime.fromISO(date).diff(this.today, 'days').days);
+      const offset = Math.round(parseScheduleDate(date).diff(this.today, 'days').days);
       return RELATIVE_DAY_LABELS[offset] ?? '';
     },
     formatDayTitle(date) {
@@ -538,8 +553,8 @@ export default {
         return;
       }
       this.requestRangeForScroll({
-        start: date < this.startDate ? date : this.startDate,
-        end: date > this.endDate ? date : this.endDate,
+        start: date < this.rangeStart ? date : this.rangeStart,
+        end: date > this.rangeEnd ? date : this.rangeEnd,
       }, action);
     },
     // The parent applies the new range together with its data, then the action runs (see dataVersion)
@@ -553,8 +568,8 @@ export default {
       this.lockNavigation(today);
       // Include the block right before the current one (yesterday's 21-24 block at 00-03)
       const start = toISODate(this.today.minus({ days: 1 }));
-      if (start < this.startDate) {
-        this.requestRangeForScroll({ start, end: today > this.endDate ? today : this.endDate }, { type: 'auto' });
+      if (start < this.rangeStart) {
+        this.requestRangeForScroll({ start, end: today > this.rangeEnd ? today : this.rangeEnd }, { type: 'auto' });
         return;
       }
       this.scrollWithinRange(today, { type: 'auto' });
@@ -568,10 +583,10 @@ export default {
     },
     prependDay() {
       // The scroll position is kept by the scroll anchor
-      this.$emit('update:range', { start: this.previousDate, end: this.endDate });
+      this.$emit('update:range', { start: this.previousDate, end: this.rangeEnd });
     },
     appendDay() {
-      this.$emit('update:range', { start: this.startDate, end: this.nextDate });
+      this.$emit('update:range', { start: this.rangeStart, end: this.nextDate });
     },
   },
 };

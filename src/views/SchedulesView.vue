@@ -26,17 +26,27 @@
     </div>
     <v-row>
       <v-col>
-        <DailyScheduleView
-          v-if="isDailyView"
-          :stellars="stellars"
-          :schedules="filteredSchedules"
-          :startDate="dayRange.start"
-          :endDate="dayRange.end"
-          :dataVersion="dataVersion"
-          :loading="isLoadingSchedules"
-          @select="openScheduleDialog"
-          @update:range="onDayRangeUpdated"
-        />
+        <!-- Mounted once the data of the range is loaded, so that it does not show the days empty -->
+        <template v-if="isDailyView">
+          <DailyScheduleView
+            v-if="isDailyDataReady"
+            :stellars="stellars"
+            :schedules="filteredSchedules"
+            :startDate="dayRange.start"
+            :endDate="dayRange.end"
+            :dataVersion="dataVersion"
+            :loading="isLoadingSchedules"
+            :requestedRange="pendingDayRange"
+            @select="openScheduleDialog"
+            @update:range="onDayRangeUpdated"
+          />
+          <!-- Only while loading: on an error, the error alert is shown instead -->
+          <v-progress-linear
+            v-else-if="isLoadingSchedules"
+            indeterminate
+            color="primary"
+          />
+        </template>
         <Calendar
           v-else
           :masks="masks"
@@ -207,7 +217,7 @@ import {
 import ScheduleDialog from '@/components/ScheduleDialog.vue';
 import ScheduleDetailDialog from '@/components/ScheduleDetailDialog.vue';
 import DailyScheduleView from '@/components/DailyScheduleView.vue';
-import { formatDateTime, isTouchDevice, getStellarGroupRank } from '@/utils/common';
+import { formatDateTime, isTouchDevice, getStellarGroupRank, nowInScheduleZone } from '@/utils/common';
 import { useDisplay } from 'vuetify';
 import ScheduleSettingsPanel from '@/components/ScheduleSettingsPanel.vue';
 
@@ -222,9 +232,9 @@ function readLocalStorage(key) {
   }
 }
 
-// Yesterday, today, and tomorrow
+// Yesterday, today, and tomorrow (in the time zone of the schedules)
 function getInitialDayRange() {
-  const today = DateTime.now().startOf('day');
+  const today = nowInScheduleZone().startOf('day');
   return {
     start: today.minus({ days: 1 }).toISODate(),
     end: today.plus({ days: 1 }).toISODate(),
@@ -260,6 +270,9 @@ export default {
         selectedSchedule: null,
         scheduleDialogSeq: 0,
         dayRange: getInitialDayRange(),
+        // Range requested for the daily view and not applied yet (see loadSchedules)
+        pendingDayRange: null,
+        isDailyDataReady: false,
         dataVersion: 0,
         isLoadingSchedules: false,
         showDefaultViewNotice: !!readLocalStorage(LS_KEY_DEFAULT_VIEW_NOTICE),
@@ -382,7 +395,9 @@ export default {
       // nextDayRange: a new range for the daily view. It is applied together with its data,
       // so that the view does not show the new days empty while loading.
       loadSchedules(nextDayRange = null) {
-        const dayRange = nextDayRange ?? this.dayRange;
+        // A reload (e.g. after saving a schedule) keeps a range extension that is still loading
+        if (nextDayRange) this.pendingDayRange = nextDayRange;
+        const dayRange = this.pendingDayRange ?? this.dayRange;
         const range = this.getScheduleRange(dayRange);
         if (!range) return;
         const { firstDateTime, lastDateTime } = range;
@@ -400,7 +415,10 @@ export default {
         this.$axios.get(SCHEDULES_API_URL, { params })
           .then(response => {
             if (requestSeq !== vm.scheduleRequestSeq) return;
-            if (vm.calendarView === VIEW_MODE_DEFAULT) vm.dayRange = dayRange;
+            if (vm.calendarView === VIEW_MODE_DEFAULT) {
+              vm.dayRange = dayRange;
+              vm.isDailyDataReady = true;
+            }
             const stellarRankMap = new Map(vm.stellars.map((s, idx) => [s.id, idx]));
             vm.schedules = response.data.content.map(elem => {
               elem.jsDate = DateTime.fromISO(elem.startDateTime).toJSDate();
@@ -425,7 +443,9 @@ export default {
             console.log(error);
           })
           .finally(() => {
-            if (requestSeq === vm.scheduleRequestSeq) vm.isLoadingSchedules = false;
+            if (requestSeq !== vm.scheduleRequestSeq) return;
+            vm.isLoadingSchedules = false;
+            vm.pendingDayRange = null;
           });
       },
       noticeError(errorMsg) {
@@ -546,10 +566,18 @@ export default {
       },
       calendarView(newValue) {
         // Save the most recently set calendar view mode to localStorage
-        localStorage.setItem(LS_KEY_CALENDAR_VIEW_MODE, newValue);
+        try {
+          localStorage.setItem(LS_KEY_CALENDAR_VIEW_MODE, newValue);
+        }
+        catch (e) {
+          console.error("Error saving the view mode to localStorage:", e);
+        }
+        this.pendingDayRange = null;
         if (newValue === VIEW_MODE_DEFAULT) {
-          // Start again from yesterday-tomorrow (auto-scrolls once loaded)
-          this.dayRange = getInitialDayRange();
+          // Start again from yesterday-tomorrow; the daily view mounts (and auto-scrolls) once it is loaded
+          this.isDailyDataReady = false;
+          this.loadSchedules(getInitialDayRange());
+          return;
         }
         // Wait for the calendar to be mounted when switching from the daily view
         this.$nextTick(() => this.loadSchedules());

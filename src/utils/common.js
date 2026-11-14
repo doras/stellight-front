@@ -27,6 +27,12 @@ export function getStellarGroupRank(stellar) {
   return 3; // isGraduated && generation === 0
 }
 
+// Schedules are stored in Korean local time (no time zone in the API).
+// "Now" and dates are compared in this zone, so that the view is right on devices in other zones.
+export const SCHEDULE_TIME_ZONE = 'Asia/Seoul';
+export const nowInScheduleZone = () => DateTime.now().setZone(SCHEDULE_TIME_ZONE);
+export const parseScheduleDate = isoDate => DateTime.fromISO(isoDate, { zone: SCHEDULE_TIME_ZONE });
+
 export const findStellar = (stellars, stellarId) => stellars.find(s => s.id === stellarId) || null;
 
 // Short Korean name for compact labels; falls back to the full name when not set
