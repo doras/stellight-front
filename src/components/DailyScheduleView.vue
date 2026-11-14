@@ -324,6 +324,9 @@ export default {
     this.scrollAnchor = null;
     // Element scrolled to by the current navigation
     this.navTargetElement = null;
+    // The data of the last render, to tell data changes from other re-renders
+    this.renderedData = null;
+    this.rememberRenderedData();
   },
   mounted() {
     // The parent mounts this view once the data of its range is loaded: auto-scroll to now
@@ -348,13 +351,15 @@ export default {
     window.removeEventListener('keydown', this.onKeyDown);
   },
   beforeUpdate() {
-    // Remember the top visible block so that re-rendering (new data, prepended day, ...)
-    // does not move what the user is looking at
-    this.scrollAnchor = this.captureScrollAnchor();
+    // Remember the top visible block so that re-rendering with new data (reload, prepended day, ...)
+    // does not move what the user is looking at. Other re-renders (toolbar date, now tick, loading)
+    // do not change the layout, so they skip the measuring.
+    this.scrollAnchor = this.hasDataChanged() ? this.captureScrollAnchor() : null;
   },
   updated() {
     this.restoreScrollAnchor(this.scrollAnchor);
     this.scrollAnchor = null;
+    this.rememberRenderedData();
   },
   methods: {
     findStellar(stellarId) {
@@ -383,9 +388,10 @@ export default {
       const element = this.navTargetElement;
       if (!element?.isConnected) return true;
       const expectedTop = parseFloat(getComputedStyle(element).scrollMarginTop) || 0;
-      if (Math.abs(element.getBoundingClientRect().top - expectedTop) <= 2) return true;
-      // The page cannot scroll further toward the target
-      return window.scrollY <= 0 || this.isScrolledToBottom();
+      const distance = element.getBoundingClientRect().top - expectedTop;
+      if (Math.abs(distance) <= 2) return true;
+      // The page cannot scroll further toward the target (down: the bottom, up: the top)
+      return distance > 0 ? this.isScrolledToBottom() : window.scrollY <= 0;
     },
     onKeyDown(event) {
       if (SCROLL_KEYS.has(event.key)) this.onUserScrollInput(event);
@@ -465,13 +471,14 @@ export default {
       const elements = this.$refs.root?.querySelectorAll('[data-anchor]') ?? [];
       // Use the first element that starts in the visible area: its position does not depend on
       // the content above it, which may grow (e.g. a prepended day being filled with schedules).
-      // Fall back to the last element covering the top of the visible area.
+      // Fall back to the last element covering the top of the visible area, also when the first
+      // element starts below the screen (a long block fills it, and a change in it must not move it).
       let anchor = null;
       let covering = null;
       for (const element of elements) {
         const rect = element.getBoundingClientRect();
         if (rect.top >= stickyTop) {
-          anchor = element;
+          if (rect.top < window.innerHeight || !covering) anchor = element;
           break;
         }
         if (rect.bottom > stickyTop) covering = element;
@@ -486,6 +493,14 @@ export default {
       if (!element) return;
       const diff = element.getBoundingClientRect().top - anchor.top;
       if (Math.abs(diff) >= 1) window.scrollBy({ top: diff, behavior: 'instant' });
+    },
+    rememberRenderedData() {
+      this.renderedData = { schedules: this.schedules, startDate: this.startDate, endDate: this.endDate };
+    },
+    hasDataChanged() {
+      const rendered = this.renderedData;
+      return !rendered || rendered.schedules !== this.schedules
+        || rendered.startDate !== this.startDate || rendered.endDate !== this.endDate;
     },
     // Day sections and schedule blocks are found by data-anchor (date, or "date|block")
     findAnchorElement(key) {

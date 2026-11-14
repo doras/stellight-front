@@ -37,7 +37,9 @@ export default {
       return getStellarShortName(this.stellar) || this.fallbackName;
     },
     chipStyle() {
-      const color = this.stellar?.personalColor ?? FALLBACK_COLOR;
+      // Only a 6-digit hex color can be used (and its contrast computed)
+      const personalColor = this.stellar?.personalColor;
+      const color = /^[0-9a-f]{6}$/i.test(personalColor ?? '') ? personalColor : FALLBACK_COLOR;
       return {
         // The personal color is used only as the background.
         // The text is pure #000 / #fff so that the computed contrast is the rendered one.

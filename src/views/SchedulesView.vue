@@ -40,9 +40,9 @@
             @select="openScheduleDialog"
             @update:range="onDayRangeUpdated"
           />
-          <!-- Only while loading: on an error, the error alert is shown instead -->
+          <!-- Only while loading (the stellars, then the schedules): on an error, the error alert is shown -->
           <v-progress-linear
-            v-else-if="isLoadingSchedules"
+            v-else-if="isLoadingStellars || isLoadingSchedules"
             indeterminate
             color="primary"
           />
@@ -273,6 +273,7 @@ export default {
         isDailyDataReady: false,
         dataVersion: 0,
         isLoadingSchedules: false,
+        isLoadingStellars: false,
         showDefaultViewNotice: !!getStorageItem(LS_KEY_DEFAULT_VIEW_NOTICE),
         alertList: [],
         calendarView: calendarViewOptions.some(item => item.value === storedCalendarView) ? storedCalendarView : VIEW_MODE_DEFAULT,
@@ -292,6 +293,7 @@ export default {
     components: { Calendar, ScheduleItem, ScheduleDialog, ScheduleDetailDialog, ScheduleSettingsPanel, DailyScheduleView },
     methods: {
       async fetchStellarsAndInitFilter() {
+        this.isLoadingStellars = true;
         try {
           const response = await this.$axios.get(STELLARS_API_URL);
           const sortedData = this.sortStellars(response.data);
@@ -303,6 +305,9 @@ export default {
         catch (error) {
           this.noticeError(formatErrorMessage("스텔라 목록 조회 중 오류가 발생했습니다.", error));
           console.log(error);
+        }
+        finally {
+          this.isLoadingStellars = false;
         }
       },
       sortStellars(data) {
@@ -413,7 +418,9 @@ export default {
         this.$axios.get(SCHEDULES_API_URL, { params })
           .then(response => {
             if (requestSeq !== vm.scheduleRequestSeq) return;
+            // A successful load makes earlier load errors stale
             vm.isError = false;
+            vm.alertList = vm.alertList.filter(alert => alert.color !== "error");
             if (vm.calendarView === VIEW_MODE_DEFAULT) {
               vm.dayRange = dayRange;
               vm.isDailyDataReady = true;
@@ -438,7 +445,14 @@ export default {
           })
           .catch(error => {
             if (requestSeq !== vm.scheduleRequestSeq) return;
-            vm.noticeError(formatErrorMessage("스케줄 목록 조회 중 오류가 발생했습니다.", error));
+            const message = formatErrorMessage("스케줄 목록 조회 중 오류가 발생했습니다.", error);
+            if (vm.isDailyView && vm.isDailyDataReady) {
+              // The daily view is shown, possibly scrolled far down: a floating alert stays visible
+              // and does not push the view down like the alert at the page top
+              vm.pushAlert(message, "error", 5000);
+            } else {
+              vm.noticeError(message);
+            }
             console.log(error);
           })
           .finally(() => {
@@ -490,17 +504,17 @@ export default {
         this.pushAlert("스케줄이 삭제되었습니다.");
         this.loadSchedules();
       },
-      pushAlert(text, color = "success") {
+      pushAlert(text, color = "success", duration = 3000) {
         const key = alertKey++;
         this.alertList.push({
           key,
           text,
           color,
         });
-        // 3초 뒤 자동으로 alert 제거
+        // duration(기본 3초) 뒤 자동으로 alert 제거
         setTimeout(() => {
           this.alertList = this.alertList.filter(alert => alert.key !== key);
-        }, 3000);
+        }, duration);
       },
       saveFilter() {
         // Save the selected stellar ids and the last added stellar id to localStorage
