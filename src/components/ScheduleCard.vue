@@ -1,15 +1,24 @@
 <template>
   <v-card
     class="schedule-card"
+    :class="{ 'schedule-card--dimmed': dimmed }"
     variant="outlined"
-    @click="$emit('select', schedule)"
+    tabindex="0"
+    role="button"
+    @click="select"
+    @keydown.enter.exact.prevent="select"
+    @keydown.space.prevent="onSpaceDown"
+    @keyup.space.exact.prevent="onSpaceUp"
+    @blur="onBlur"
   >
     <div class="card-header">
       <StellarNameChip
         :stellar="stellar"
         :fallbackName="schedule.stellarNameKor"
+        :dimmed="dimmed"
       />
-      <span class="time-span">{{ schedule.isFixedTime ? time : '시간 미정' }}</span>
+      <!-- Time-not-fixed schedules are in the "시간 미정" block, which tells it already -->
+      <span v-if="schedule.isFixedTime" class="time-span">{{ time }}</span>
     </div>
     <div class="title-div">{{ schedule.title }}</div>
     <div v-if="schedule.remark" class="remark-div">{{ schedule.remark }}</div>
@@ -33,11 +42,39 @@ export default {
       type: Object,
       required: true,
     },
+    // Past schedule: faded
+    dimmed: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: ['select'],
   computed: {
     time() {
       return formatScheduleTime(this.schedule.startDateTime);
+    },
+  },
+  created() {
+    // Whether Space was pressed on this card (not reactive: not used in rendering)
+    this.spacePressed = false;
+  },
+  methods: {
+    // Like a native button: Enter opens on keydown (only once while held),
+    // Space on keyup, only when it was also pressed on this card
+    select(event) {
+      if (event?.repeat) return;
+      this.$emit('select', this.schedule);
+    },
+    onSpaceDown(event) {
+      if (!event.ctrlKey && !event.altKey && !event.metaKey) this.spacePressed = true;
+    },
+    onSpaceUp() {
+      if (!this.spacePressed) return;
+      this.spacePressed = false;
+      this.select();
+    },
+    onBlur() {
+      this.spacePressed = false;
     },
   },
 };
@@ -77,5 +114,18 @@ export default {
   word-break: keep-all;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
+}
+
+.schedule-card--dimmed {
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.schedule-card--dimmed .time-span,
+.schedule-card--dimmed .title-div {
+  opacity: 0.5;
+}
+
+.schedule-card--dimmed .remark-div {
+  opacity: 0.4;
 }
 </style>

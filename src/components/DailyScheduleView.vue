@@ -4,7 +4,6 @@
       <v-btn
         icon="$prev"
         variant="text"
-        density="comfortable"
         aria-label="이전 날"
         @click="jumpByDays(-1)"
       />
@@ -18,7 +17,6 @@
       <v-btn
         icon="$next"
         variant="text"
-        density="comfortable"
         aria-label="다음 날"
         @click="jumpByDays(1)"
       />
@@ -68,6 +66,7 @@
             :stellar="findStellar(schedule.stellarId)"
             :fallbackName="schedule.stellarNameKor"
             :marked="hasDayOffDetail(schedule)"
+            :dimmed="isPastDay(day.date)"
           />
         </button>
       </div>
@@ -95,6 +94,7 @@
             :key="schedule.id"
             :stellar="findStellar(schedule.stellarId)"
             :schedule="schedule"
+            :dimmed="isDimmed(day.date, block.index)"
             @select="$emit('select', $event)"
           />
         </div>
@@ -120,6 +120,7 @@
             :key="schedule.id"
             :stellar="findStellar(schedule.stellarId)"
             :schedule="schedule"
+            :dimmed="isPastDay(day.date)"
             @select="$emit('select', $event)"
           />
         </div>
@@ -394,6 +395,8 @@ export default {
       return distance > 0 ? this.isScrolledToBottom() : window.scrollY <= 0;
     },
     onKeyDown(event) {
+      // A key handled by the focused element (e.g. Space on a card) does not scroll the page
+      if (event.defaultPrevented) return;
       if (SCROLL_KEYS.has(event.key)) this.onUserScrollInput(event);
     },
     // The user scrolls by themselves: stop following the navigation, including one waiting for data
@@ -678,11 +681,12 @@ export default {
   background-color: rgb(var(--v-theme-primary));
 }
 
+/* Wrapped rows are 16px apart, so that the chips' hit areas (8px above and below) meet without overlapping */
 .day-off-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: 16px 6px;
   padding: 12px 4px 4px;
 }
 
@@ -693,9 +697,17 @@ export default {
 }
 
 .day-off-chip-button {
+  position: relative;
   max-width: 100%;
   border-radius: 999px;
   cursor: pointer;
+}
+
+/* A larger touch target (about 40px high) without changing the layout or the focus ring around the chip */
+.day-off-chip-button::before {
+  content: '';
+  position: absolute;
+  inset: -8px 0;
 }
 
 .schedule-block {
@@ -749,7 +761,9 @@ export default {
   gap: 8px;
 }
 
-.dimmed {
+/* Past blocks: their cards and chips fade themselves (dimmed prop) */
+.dimmed .block-header,
+.dimmed .day-off-label {
   opacity: 0.5;
 }
 
