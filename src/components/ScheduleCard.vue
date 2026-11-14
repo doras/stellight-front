@@ -6,9 +6,10 @@
     tabindex="0"
     role="button"
     @click="select"
-    @keydown.enter.prevent="select"
-    @keydown.space.prevent
-    @keyup.space.prevent="select"
+    @keydown.enter.exact.prevent="select"
+    @keydown.space.prevent="onSpaceDown"
+    @keyup.space.exact.prevent="onSpaceUp"
+    @blur="onBlur"
   >
     <div class="card-header">
       <StellarNameChip
@@ -53,11 +54,27 @@ export default {
       return formatScheduleTime(this.schedule.startDateTime);
     },
   },
+  created() {
+    // Whether Space was pressed on this card (not reactive: not used in rendering)
+    this.spacePressed = false;
+  },
   methods: {
+    // Like a native button: Enter opens on keydown (only once while held),
+    // Space on keyup, only when it was also pressed on this card
     select(event) {
-      // Like a native button: Enter opens on keydown (only once while held), Space on keyup
       if (event?.repeat) return;
       this.$emit('select', this.schedule);
+    },
+    onSpaceDown(event) {
+      if (!event.ctrlKey && !event.altKey && !event.metaKey) this.spacePressed = true;
+    },
+    onSpaceUp() {
+      if (!this.spacePressed) return;
+      this.spacePressed = false;
+      this.select();
+    },
+    onBlur() {
+      this.spacePressed = false;
     },
   },
 };
