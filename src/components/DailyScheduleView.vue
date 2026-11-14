@@ -66,6 +66,7 @@
             :stellar="findStellar(schedule.stellarId)"
             :fallbackName="schedule.stellarNameKor"
             :marked="hasDayOffDetail(schedule)"
+            :dimmed="isPastDay(day.date)"
           />
         </button>
       </div>
@@ -93,6 +94,7 @@
             :key="schedule.id"
             :stellar="findStellar(schedule.stellarId)"
             :schedule="schedule"
+            :dimmed="isDimmed(day.date, block.index)"
             @select="$emit('select', $event)"
           />
         </div>
@@ -118,7 +120,7 @@
             :key="schedule.id"
             :stellar="findStellar(schedule.stellarId)"
             :schedule="schedule"
-            :showTime="false"
+            :dimmed="isPastDay(day.date)"
             @select="$emit('select', $event)"
           />
         </div>
@@ -750,20 +752,10 @@ export default {
   gap: 8px;
 }
 
-/* Past blocks: fade the text, but less the name chips (fading them blurs their text on the color) */
+/* Past blocks: their cards and chips fade themselves (dimmed prop) */
 .dimmed .block-header,
-.dimmed .day-off-label,
-.dimmed :deep(.time-span),
-.dimmed :deep(.title-div) {
+.dimmed .day-off-label {
   opacity: 0.5;
-}
-
-.dimmed :deep(.schedule-card .remark-div) {
-  opacity: 0.4;
-}
-
-.dimmed :deep(.stellar-name-chip) {
-  opacity: 0.75;
 }
 
 .empty-day {

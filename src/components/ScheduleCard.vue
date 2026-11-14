@@ -1,6 +1,7 @@
 <template>
   <v-card
     class="schedule-card"
+    :class="{ 'schedule-card--dimmed': dimmed }"
     variant="outlined"
     @click="$emit('select', schedule)"
   >
@@ -8,8 +9,10 @@
       <StellarNameChip
         :stellar="stellar"
         :fallbackName="schedule.stellarNameKor"
+        :dimmed="dimmed"
       />
-      <span v-if="showTime" class="time-span">{{ schedule.isFixedTime ? time : '시간 미정' }}</span>
+      <!-- Time-not-fixed schedules are in the "시간 미정" block, which tells it already -->
+      <span v-if="schedule.isFixedTime" class="time-span">{{ time }}</span>
     </div>
     <div class="title-div">{{ schedule.title }}</div>
     <div v-if="schedule.remark" class="remark-div">{{ schedule.remark }}</div>
@@ -33,10 +36,10 @@ export default {
       type: Object,
       required: true,
     },
-    // Hidden where the block header already tells it ("시간 미정")
-    showTime: {
+    // Past schedule: faded
+    dimmed: {
       type: Boolean,
-      default: true,
+      default: false,
     },
   },
   emits: ['select'],
@@ -82,5 +85,18 @@ export default {
   word-break: keep-all;
   overflow-wrap: anywhere;
   white-space: pre-wrap;
+}
+
+.schedule-card--dimmed {
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.schedule-card--dimmed .time-span,
+.schedule-card--dimmed .title-div {
+  opacity: 0.5;
+}
+
+.schedule-card--dimmed .remark-div {
+  opacity: 0.4;
 }
 </style>
