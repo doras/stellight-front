@@ -204,7 +204,6 @@ export default {
       // Date shown in the toolbar while navigating to it (◀ / ▶ / 오늘), instead of the dates
       // that the smooth scroll passes by. Released when the scroll ends or the user scrolls.
       navTargetDate: null,
-      hasAutoScrolled: false,
     };
   },
   computed: {
@@ -325,7 +324,6 @@ export default {
   },
   mounted() {
     // The parent mounts this view once the data of its range is loaded: auto-scroll to now
-    this.hasAutoScrolled = true;
     this.autoScroll('instant');
 
     this.nowTimer = setInterval(this.updateNow, NOW_UPDATE_INTERVAL_MS);
@@ -349,7 +347,7 @@ export default {
   beforeUpdate() {
     // Remember the top visible block so that re-rendering (new data, prepended day, ...)
     // does not move what the user is looking at
-    this.scrollAnchor = this.hasAutoScrolled ? this.captureScrollAnchor() : null;
+    this.scrollAnchor = this.captureScrollAnchor();
   },
   updated() {
     this.restoreScrollAnchor(this.scrollAnchor);
@@ -384,8 +382,7 @@ export default {
       const expectedTop = parseFloat(getComputedStyle(element).scrollMarginTop) || 0;
       if (Math.abs(element.getBoundingClientRect().top - expectedTop) <= 2) return true;
       // The page cannot scroll further toward the target
-      const scrollingElement = document.scrollingElement ?? document.documentElement;
-      return window.scrollY <= 0 || window.innerHeight + window.scrollY >= scrollingElement.scrollHeight - 1;
+      return window.scrollY <= 0 || this.isScrolledToBottom();
     },
     onKeyDown(event) {
       if (SCROLL_KEYS.has(event.key)) this.onUserScrollInput(event);
