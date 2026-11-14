@@ -217,19 +217,17 @@ import {
 import ScheduleDialog from '@/components/ScheduleDialog.vue';
 import ScheduleDetailDialog from '@/components/ScheduleDetailDialog.vue';
 import DailyScheduleView from '@/components/DailyScheduleView.vue';
-import { formatDateTime, isTouchDevice, getStellarGroupRank, nowInScheduleZone } from '@/utils/common';
+import { formatDateTime, isTouchDevice, getStellarGroupRank, nowInScheduleZone, parseScheduleDate } from '@/utils/common';
+import { getStorageItem, setStorageItem, removeStorageItem } from '@/utils/storage';
 import { useDisplay } from 'vuetify';
 import ScheduleSettingsPanel from '@/components/ScheduleSettingsPanel.vue';
 
 let alertKey = 0;
 
-function readLocalStorage(key) {
-  try {
-    return localStorage.getItem(key);
-  }
-  catch (e) {
-    return null;
-  }
+// Error message with the server's message when there is one (none on network errors)
+function formatErrorMessage(text, error) {
+  const detail = error.response?.data?.message;
+  return detail ? `${text} ${detail}` : text;
 }
 
 // Yesterday, today, and tomorrow (in the time zone of the schedules)
@@ -254,7 +252,7 @@ export default {
         { title: "주간", value: VIEW_MODE_WEEKLY },
         { title: "월간", value: VIEW_MODE_MONTHLY },
       ];
-      const storedCalendarView = readLocalStorage(LS_KEY_CALENDAR_VIEW_MODE);
+      const storedCalendarView = getStorageItem(LS_KEY_CALENDAR_VIEW_MODE);
       return {
         masks: {
           title: "YYYY년 MMM",
@@ -275,7 +273,7 @@ export default {
         isDailyDataReady: false,
         dataVersion: 0,
         isLoadingSchedules: false,
-        showDefaultViewNotice: !!readLocalStorage(LS_KEY_DEFAULT_VIEW_NOTICE),
+        showDefaultViewNotice: !!getStorageItem(LS_KEY_DEFAULT_VIEW_NOTICE),
         alertList: [],
         calendarView: calendarViewOptions.some(item => item.value === storedCalendarView) ? storedCalendarView : VIEW_MODE_DEFAULT,
         calendarViewOptions,
@@ -303,7 +301,7 @@ export default {
           this.loadSchedules();
         }
         catch (error) {
-          this.noticeError(`스텔라 목록 조회 중 오류가 발생했습니다. ${error.response?.data?.message}`);
+          this.noticeError(formatErrorMessage("스텔라 목록 조회 중 오류가 발생했습니다.", error));
           console.log(error);
         }
       },
@@ -318,7 +316,7 @@ export default {
       initFilter() {
         // load filter info from local storage and set the filter to it
         // if it is not stored yet, all stellar filter should be selected by default (except the case of empty array in local storage)
-        const storedIds = localStorage.getItem(LS_KEY_SCHEDULE_FILTER_STELLAR_IDS);
+        const storedIds = getStorageItem(LS_KEY_SCHEDULE_FILTER_STELLAR_IDS);
         if (storedIds) {
           this.stellarIds = this.getFilteredStellarIds(storedIds);
 
@@ -346,7 +344,7 @@ export default {
       },
       getLastAddedStellarId() {
         // load the last added stellar id from local storage
-        const lastAddedIdStr = localStorage.getItem(LS_KEY_SCHEDULE_FILTER_LAST_ADDED_STELLAR_ID);
+        const lastAddedIdStr = getStorageItem(LS_KEY_SCHEDULE_FILTER_LAST_ADDED_STELLAR_ID);
         const lastAddedId = parseInt(lastAddedIdStr, 10);
 
         // if NaN, regard it as 12 which is the last added stellar id when this code is written
@@ -367,8 +365,8 @@ export default {
       getScheduleRange(dayRange) {
         if (this.calendarView === VIEW_MODE_DEFAULT) {
           return {
-            firstDateTime: DateTime.fromISO(dayRange.start),
-            lastDateTime: DateTime.fromISO(dayRange.end).endOf("day"),
+            firstDateTime: parseScheduleDate(dayRange.start),
+            lastDateTime: parseScheduleDate(dayRange.end).endOf("day"),
           };
         }
         return this.getCalendarRange();
@@ -415,6 +413,7 @@ export default {
         this.$axios.get(SCHEDULES_API_URL, { params })
           .then(response => {
             if (requestSeq !== vm.scheduleRequestSeq) return;
+            vm.isError = false;
             if (vm.calendarView === VIEW_MODE_DEFAULT) {
               vm.dayRange = dayRange;
               vm.isDailyDataReady = true;
@@ -439,7 +438,7 @@ export default {
           })
           .catch(error => {
             if (requestSeq !== vm.scheduleRequestSeq) return;
-            vm.noticeError(`스케줄 목록 조회 중 오류가 발생했습니다. ${error.response?.data?.message}`);
+            vm.noticeError(formatErrorMessage("스케줄 목록 조회 중 오류가 발생했습니다.", error));
             console.log(error);
           })
           .finally(() => {
@@ -466,12 +465,7 @@ export default {
       },
       dismissDefaultViewNotice() {
         this.showDefaultViewNotice = false;
-        try {
-          localStorage.removeItem(LS_KEY_DEFAULT_VIEW_NOTICE);
-        }
-        catch (e) {
-          console.error("Error removing the notice flag from localStorage:", e);
-        }
+        removeStorageItem(LS_KEY_DEFAULT_VIEW_NOTICE);
       },
       toggleSettingsPanel() {
         this.showSettings = !this.showSettings;
@@ -510,10 +504,10 @@ export default {
       },
       saveFilter() {
         // Save the selected stellar ids and the last added stellar id to localStorage
-        localStorage.setItem(LS_KEY_SCHEDULE_FILTER_STELLAR_IDS, JSON.stringify(this.stellarIds));
+        setStorageItem(LS_KEY_SCHEDULE_FILTER_STELLAR_IDS, JSON.stringify(this.stellarIds));
 
         const maxStellarId = this.stellars.length > 0 ? Math.max(...this.stellars.map(s => s.id)) : 0;
-        localStorage.setItem(LS_KEY_SCHEDULE_FILTER_LAST_ADDED_STELLAR_ID, maxStellarId.toString());
+        setStorageItem(LS_KEY_SCHEDULE_FILTER_LAST_ADDED_STELLAR_ID, maxStellarId.toString());
       },
     },
     computed: {
@@ -566,12 +560,7 @@ export default {
       },
       calendarView(newValue) {
         // Save the most recently set calendar view mode to localStorage
-        try {
-          localStorage.setItem(LS_KEY_CALENDAR_VIEW_MODE, newValue);
-        }
-        catch (e) {
-          console.error("Error saving the view mode to localStorage:", e);
-        }
+        setStorageItem(LS_KEY_CALENDAR_VIEW_MODE, newValue);
         this.pendingDayRange = null;
         if (newValue === VIEW_MODE_DEFAULT) {
           // Start again from yesterday-tomorrow; the daily view mounts (and auto-scrolls) once it is loaded

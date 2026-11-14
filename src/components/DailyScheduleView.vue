@@ -84,9 +84,9 @@
           {{ formatBlockRange(block.index) }}
           <span
             v-if="nowTargetKey === getBlockKey(day.date, block.index)"
-            class="now-badge"
+            :class="nowTarget.isLive ? 'now-badge' : 'next-badge'"
           >
-            지금
+            {{ nowTarget.isLive ? '지금' : '다음' }}
           </span>
         </h3>
         <div class="card-grid">
@@ -287,9 +287,12 @@ export default {
       const recent = this.nonEmptyBlocks
         .filter(block => block.ordinal === current || block.ordinal === current - 1)
         .sort((a, b) => b.ordinal - a.ordinal);
-      if (recent.length > 0) return recent[0];
 
-      return this.nonEmptyBlocks.find(block => block.ordinal > current) ?? null;
+      // isLive: the target may be live ("지금"), or it has not started yet ("다음")
+      if (recent.length > 0) return { ...recent[0], isLive: true };
+
+      const next = this.nonEmptyBlocks.find(block => block.ordinal > current);
+      return next ? { ...next, isLive: false } : null;
     },
     nowTargetKey() {
       return this.nowTarget ? this.getBlockKey(this.nowTarget.date, this.nowTarget.index) : null;
@@ -331,7 +334,7 @@ export default {
     window.addEventListener('scroll', this.onScroll, { passive: true });
     window.addEventListener('scrollend', this.onScrollEnd);
     window.addEventListener('wheel', this.onUserScrollInput, { passive: true });
-    window.addEventListener('touchstart', this.onUserScrollInput, { passive: true });
+    window.addEventListener('touchmove', this.onUserScrollInput, { passive: true });
     window.addEventListener('keydown', this.onKeyDown);
   },
   beforeUnmount() {
@@ -341,7 +344,7 @@ export default {
     window.removeEventListener('scroll', this.onScroll);
     window.removeEventListener('scrollend', this.onScrollEnd);
     window.removeEventListener('wheel', this.onUserScrollInput);
-    window.removeEventListener('touchstart', this.onUserScrollInput);
+    window.removeEventListener('touchmove', this.onUserScrollInput);
     window.removeEventListener('keydown', this.onKeyDown);
   },
   beforeUpdate() {
@@ -390,11 +393,20 @@ export default {
     // The user scrolls by themselves: stop following the navigation, including one waiting for data
     onUserScrollInput(event) {
       if (this.navTargetDate === null && !this.pendingScroll) return;
-      // Tapping (or pressing Space on) ◀ / ▶ / 오늘 is not scrolling: it must not cancel the navigation
-      // that the button itself continues, e.g. the second of two quick taps on ▶
-      if (event?.target instanceof Element && event.target.closest('.daily-toolbar')) return;
+      if (event?.target instanceof Element && !this.isPageScrollInput(event)) return;
       this.pendingScroll = null;
       this.releaseNavigation();
+    },
+    // Whether the input (wheel, touch drag, scroll key) scrolls the page, i.e. the user moves away from
+    // the navigation target. A tap is not a drag, so tapping buttons (FABs, cards) does not count. Not:
+    // - ◀ / ▶ / 오늘 themselves, e.g. Space on a focused button,
+    // - the settings drawer, dialogs and other overlays (their own content, or a locked page),
+    // - typing into a text field (Space).
+    isPageScrollInput(event) {
+      const target = event.target;
+      if (target.closest('.daily-toolbar, .v-overlay, .v-navigation-drawer, .v-navigation-drawer__scrim')) return false;
+      if (event.type === 'keydown' && target.closest('input, textarea, select, [contenteditable]')) return false;
+      return true;
     },
     // Shows the date in the toolbar until releaseNavigation()
     lockNavigation(date) {
@@ -557,16 +569,22 @@ export default {
     // The parent applies the new range together with its data, then the action runs (see dataVersion)
     requestRangeForScroll(range, action) {
       this.pendingScroll = { ...action, version: this.dataVersion };
+      // Already being loaded: wait for it instead of requesting it again (which restarts the load)
+      if (this.requestedRange && range.start >= this.rangeStart && range.end <= this.rangeEnd) return;
       this.$emit('update:range', range);
     },
     goToday() {
       this.updateNow();
       const today = toISODate(this.today);
       this.lockNavigation(today);
-      // Include the block right before the current one (yesterday's 21-24 block at 00-03)
+      // Include the block right before the current one (yesterday's 21-24 block at 00-03).
+      // Wait until yesterday is loaded, also when it is still loading, before choosing the target.
       const start = toISODate(this.today.minus({ days: 1 }));
-      if (start < this.rangeStart) {
-        this.requestRangeForScroll({ start, end: today > this.rangeEnd ? today : this.rangeEnd }, { type: 'auto' });
+      if (start < this.startDate) {
+        this.requestRangeForScroll({
+          start: start < this.rangeStart ? start : this.rangeStart,
+          end: today > this.rangeEnd ? today : this.rangeEnd,
+        }, { type: 'auto' });
         return;
       }
       this.scrollWithinRange(today, { type: 'auto' });
@@ -692,6 +710,14 @@ export default {
 .block-icon {
   margin-right: -2px;
   color: rgba(0, 0, 0, 0.6);
+}
+
+.next-badge {
+  padding: 0 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  color: #fff;
+  background-color: #616161;
 }
 
 .now-badge {
