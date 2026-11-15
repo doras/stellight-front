@@ -1,6 +1,7 @@
 <template>
   <span
     class="stellar-name-chip"
+    :class="{ 'stellar-name-chip--dimmed': dimmed }"
     :style="chipStyle"
   >
     <span v-emoji class="emoji-span">{{ stellar?.emoji ?? '' }}</span>
@@ -28,6 +29,11 @@ export default {
     },
     // Appends "*" (e.g. a day off with a remark)
     marked: {
+      type: Boolean,
+      default: false,
+    },
+    // Past schedules: faded less than text, as fading more blurs the text into the color
+    dimmed: {
       type: Boolean,
       default: false,
     },
@@ -64,6 +70,10 @@ export default {
   font-weight: 700;
   line-height: 1.5;
   white-space: nowrap;
+}
+
+.stellar-name-chip--dimmed {
+  opacity: 0.75;
 }
 
 .emoji-span {
