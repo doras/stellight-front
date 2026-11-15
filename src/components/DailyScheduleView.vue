@@ -395,6 +395,9 @@ export default {
       return distance > 0 ? this.isScrolledToBottom() : window.scrollY <= 0;
     },
     onKeyDown(event) {
+      // A key handled by the focused element does not scroll the page, nor does Space on a button (a card or a day-off chip)
+      if (event.defaultPrevented) return;
+      if (event.key === ' ' && event.target.closest?.('button')) return;
       if (SCROLL_KEYS.has(event.key)) this.onUserScrollInput(event);
     },
     // The user scrolls by themselves: stop following the navigation, including one waiting for data
